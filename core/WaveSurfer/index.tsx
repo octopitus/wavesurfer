@@ -1,5 +1,12 @@
 import React, {Component} from 'react'
-import {View, Animated} from 'react-native'
+import {
+  View,
+  Animated,
+  PanResponder,
+  PanResponderGestureState,
+  PanResponderInstance,
+  GestureResponderEvent
+} from 'react-native'
 import MaskedView from '@react-native-community/masked-view'
 
 import styles from './styles'
@@ -12,6 +19,52 @@ interface Props {
 export default class WaveSurfer extends Component<Props> {
   static defaultProps = {
     animatedValue: new Animated.Value(0)
+  }
+
+  _initialPosition = 0
+
+  gestureResponder: PanResponderInstance
+
+  constructor(props: Props) {
+    super(props)
+
+    this.gestureResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: this.onPanResponderGrant.bind(this),
+      onPanResponderMove: this.onPanResponderMove.bind(this),
+      onPanResponderRelease: this.onPanResponderRelease.bind(this),
+      onPanResponderReject: this.onPanResponderReject.bind(this)
+    })
+  }
+
+  onPanResponderGrant(
+    evt: GestureResponderEvent,
+    gestureState: PanResponderGestureState
+  ) {
+    const {locationX} = evt.nativeEvent
+    console.log({locationX})
+    // @ts-ignore
+    this._initialPosition = this.props.animatedValue.__getValue()
+  }
+
+  onPanResponderMove(
+    evt: GestureResponderEvent,
+    gestureState: PanResponderGestureState
+  ) {
+    this.props.animatedValue.setValue(this._initialPosition + gestureState.dx)
+  }
+
+  onPanResponderRelease() {
+    this._initialPosition =
+      // @ts-ignore
+      this._initialPosition + this.props.animatedValue.__getValue()
+  }
+
+  onPanResponderReject() {
+    this._initialPosition =
+      // @ts-ignore
+      this._initialPosition + this.props.animatedValue.__getValue()
   }
 
   renderMask = () => {
@@ -39,7 +92,9 @@ export default class WaveSurfer extends Component<Props> {
 
   render() {
     return (
-      <MaskedView maskElement={this.renderElement()}>
+      <MaskedView
+        {...this.gestureResponder.panHandlers}
+        maskElement={this.renderElement()}>
         {this.renderMask()}
       </MaskedView>
     )
