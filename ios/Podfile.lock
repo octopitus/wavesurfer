@@ -24,6 +24,8 @@ PODS:
     - React-RCTText (= 0.60.3)
     - React-RCTVibration (= 0.60.3)
     - React-RCTWebSocket (= 0.60.3)
+  - React-ART (0.60.3):
+    - React-Core (= 0.60.3)
   - React-Core (0.60.3):
     - Folly (= 2018.10.22.00)
     - React-cxxreact (= 0.60.3)
@@ -81,6 +83,8 @@ PODS:
   - React-RCTWebSocket (0.60.3):
     - React-Core (= 0.60.3)
     - React-fishhook (= 0.60.3)
+  - RNCMaskedView (0.1.1):
+    - React
   - yoga (0.60.3.React)
 
 DEPENDENCIES:
@@ -88,6 +92,7 @@ DEPENDENCIES:
   - Folly (from `../node_modules/react-native/third-party-podspecs/Folly.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - React (from `../node_modules/react-native/`)
+  - React-ART (from `../node_modules/react-native/Libraries/ART`)
   - React-Core (from `../node_modules/react-native/React`)
   - React-cxxreact (from `../node_modules/react-native/ReactCommon/cxxreact`)
   - React-DevSupport (from `../node_modules/react-native/React`)
@@ -105,6 +110,7 @@ DEPENDENCIES:
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-RCTWebSocket (from `../node_modules/react-native/Libraries/WebSocket`)
+  - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
   - yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -120,6 +126,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   React:
     :path: "../node_modules/react-native/"
+  React-ART:
+    :path: "../node_modules/react-native/Libraries/ART"
   React-Core:
     :path: "../node_modules/react-native/React"
   React-cxxreact:
@@ -154,6 +162,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   React-RCTWebSocket:
     :path: "../node_modules/react-native/Libraries/WebSocket"
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-community/masked-view"
   yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -163,6 +173,7 @@ SPEC CHECKSUMS:
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
   React: ac23e9cc8d2d4cfe9b536b5cc0c32d19b9937bcf
+  React-ART: 33be0fb8e011d21a51f7bd8aa31e22f2345f39ae
   React-Core: 84de3cf80e31f0267c5ce0b5b482d59ce30a8a57
   React-cxxreact: a802a1c6b14f3de66ba032460b424c17ececd1e2
   React-DevSupport: ae72c4fc86c03197f007bb24404077c85f6dabc1
@@ -180,8 +191,9 @@ SPEC CHECKSUMS:
   React-RCTText: b026f8350c2cbe0daeb9880dd9c6e018fce0daf7
   React-RCTVibration: 5d9ed4a968e9d42880ddcc7c29bee3417c745408
   React-RCTWebSocket: 69d8565d66043f244b4129f3d7154c5689fb7d3e
+  RNCMaskedView: b79e193409a90bf6b5170d421684f437ff4e2278
   yoga: 843fe25849b56131275bf3e5da2c468e96f68aff
 
-PODFILE CHECKSUM: 433daeb883d1829d124bd7e9d74214674cf46d79
+PODFILE CHECKSUM: 9fcd702a595be7932264981cce1997f9e0abec36
 
 COCOAPODS: 1.6.1

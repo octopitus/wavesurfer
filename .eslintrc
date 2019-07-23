@@ -1,8 +1,52 @@
 {
-  "root": true,
-  "extends": "@react-native-community",
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "globals": {
+    "global": true,
+    "__DEV__": true
+  },
+  "env": {
+    "jest": true,
+    "react-native/react-native": true
+  },
+  "plugins": [
+    "import",
+    "@typescript-eslint",
+    "react",
+    "react-native",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
   "rules": {
-    "quotes": "off",
-    "comma-dangle": "off"
+    "prettier/prettier": "error",
+    "react/prop-types": "off",
+    "react/display-name": "off",
+    "react-native/split-platform-components": "error",
+    "react-native/no-inline-styles": 1,
+    "react-native/no-color-literals": 1,
+    "@typescript-eslint/no-object-literal-type-assertion": [
+      "error",
+      {"allowAsParameter": true}
+    ],
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }

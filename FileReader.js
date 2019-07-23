@@ -1,3 +1,4 @@
+/* eslint-disable */
 var btoa = function(s) {
   var c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
     e = [],
@@ -17,6 +18,8 @@ var btoa = function(s) {
   }
   return e.join('');
 }
+
+global.btoa = global.btoa || btoa;
 
 var atob = function(s) {
   var c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
@@ -43,23 +46,28 @@ var atob = function(s) {
   return d.join('');
 }
 
-/**
-* Add FileReader to the window object
-*/
+global.atob = global.atob || atob;
+
 FileReader.prototype.readAsArrayBuffer = function (blob) {
-	if (this.readyState === this.LOADING) throw new Error("InvalidStateError");
+	if (this.readyState === this.LOADING) {
+    throw new Error("InvalidStateError");
+  }
+
 	this._setReadyState(this.LOADING);
 	this._result = null;
-	this._error = null;
-	const fr = new FileReader();
-	fr.onloadend = () => {
-    const base64Data = fr.result.split(/base64,/)[1]
+  this._error = null;
+
+  const fileReader = new FileReader();
+
+	fileReader.onloadend = () => {
+    const base64Data = fileReader.result.split(/base64,/)[1]
 		const content = atob(base64Data);
 		const buffer = new ArrayBuffer(content.length);
 		const view = new Uint8Array(buffer);
 		view.set(Array.from(content).map(c => c.charCodeAt(0)));
 		this._result = buffer;
 		this._setReadyState(this.DONE);
-	};
-	fr.readAsDataURL(blob);
+  };
+
+	fileReader.readAsDataURL(blob);
 }
