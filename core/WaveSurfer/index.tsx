@@ -1,5 +1,5 @@
 import React, {Component, createRef} from 'react'
-import {View, Animated, Dimensions} from 'react-native'
+import {View, Animated, Dimensions, Easing} from 'react-native'
 import MaskedView from '@react-native-community/masked-view'
 
 import readFromExternalSource from '@core/readFromExternalSource'
@@ -44,13 +44,39 @@ export default class WaveSurfer extends Component<Props, State> {
 
   componentDidUpdate() {
     if (this.state.peaks.length) {
-      Animated.timing(this.props.animatedValue, {
-        toValue: this.state.peaks.length * 4,
-        duration: (this.state.peaks.length / 3) * 1000
-      }).start(({finished}) => {
-        if (finished && this.scrollRef.current) {
-          this.scrollRef.current.getNode().scrollToEnd()
-        }
+      this.triggerAnimation()
+    }
+  }
+
+  triggerAnimation = () => {
+    this.ensureScrollPositionIsCorrect()
+
+    // @ts-ignore
+    const travered = this.props.animatedValue.__getValue()
+    const widthOfPeakView = this.state.peaks.length * 4
+    const totalDuration = this.state.peaks.length / 3
+
+    // @ts-ignore
+    const remainingDuration =
+      ((widthOfPeakView - travered) * totalDuration) / widthOfPeakView
+
+    Animated.timing(this.props.animatedValue, {
+      toValue: this.state.peaks.length * 4,
+      duration: remainingDuration * 1000,
+      easing: Easing.linear
+    }).start(() => {
+      this.ensureScrollPositionIsCorrect()
+    })
+  }
+
+  ensureScrollPositionIsCorrect = () => {
+    // @ts-ignore
+    const travered = this.props.animatedValue.__getValue()
+
+    if (this.scrollRef.current) {
+      this.scrollRef.current.getNode().scrollTo({
+        x: travered,
+        animated: false
       })
     }
   }
@@ -112,6 +138,7 @@ export default class WaveSurfer extends Component<Props, State> {
           onScroll={Animated.event([
             {nativeEvent: {contentOffset: {x: this.props.animatedValue}}}
           ])}
+          onScrollEndDrag={this.triggerAnimation}
           style={styles.scrollView}>
           <View style={{height: peakViewHeight, width: peakViewWidth}} />
         </Animated.ScrollView>
