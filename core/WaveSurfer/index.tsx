@@ -37,6 +37,16 @@ export default class WaveSurfer extends Component<Props, State> {
 
   scrollRef = createRef<any>()
 
+  onScrollEvent: ReturnType<typeof Animated.event>
+
+  constructor(props: Props) {
+    super(props)
+
+    this.onScrollEvent = Animated.event([
+      {nativeEvent: {contentOffset: {x: this.props.animatedValue}}}
+    ])
+  }
+
   componentDidMount() {
     const {uri} = this.props.source
     readFromExternalSource(uri).then(peaks => this.setState({peaks}))
@@ -64,9 +74,7 @@ export default class WaveSurfer extends Component<Props, State> {
       toValue: this.state.peaks.length * 4,
       duration: remainingDuration * 1000,
       easing: Easing.linear
-    }).start(() => {
-      this.ensureScrollPositionIsCorrect()
-    })
+    }).start(this.ensureScrollPositionIsCorrect)
   }
 
   ensureScrollPositionIsCorrect = () => {
@@ -133,12 +141,11 @@ export default class WaveSurfer extends Component<Props, State> {
           ref={this.scrollRef}
           horizontal
           bounces={false}
+          decelerationRate={0.5}
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={1}
-          onScroll={Animated.event([
-            {nativeEvent: {contentOffset: {x: this.props.animatedValue}}}
-          ])}
-          onScrollEndDrag={this.triggerAnimation}
+          onScroll={this.onScrollEvent}
+          onMomentumScrollEnd={this.triggerAnimation}
           style={styles.scrollView}>
           <View style={{height: peakViewHeight, width: peakViewWidth}} />
         </Animated.ScrollView>
