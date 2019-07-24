@@ -3,17 +3,17 @@ import AV from 'aurora'
 // @ts-ignore
 import {OfflineAudioContext as AudioContext} from 'web-audio-engine'
 
-export default function decode(
+export default function decodeToAudioBuffer(
   arrayBuffer: ArrayBuffer,
   context = new AudioContext()
-): Promise<any> {
+): Promise<AudioBuffer> {
   return new Promise((resolve, reject) => {
     // @ts-ignore
     const asset = AV.Asset.fromBuffer(arrayBuffer)
 
     asset.on('error', reject)
 
-    asset.decodeToBuffer((buffer: Buffer) => {
+    asset.decodeToBuffer((buffer: ArrayLike<number>) => {
       const channels = asset.format.channelsPerFrame
       const samples = buffer.length / channels
       const audioBuffer = context.createBuffer(
