@@ -1,15 +1,15 @@
 import {StyleSheet, Dimensions} from 'react-native'
 
-const {height, width} = Dimensions.get('screen')
+const {width} = Dimensions.get('screen')
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'relative'
+  },
   maskContainer: {
-    flexDirection: 'row',
-    height,
-    width
+    flexDirection: 'row'
   },
   mask: {
-    height,
     width: width / 2
   },
   scroll: {
@@ -21,11 +21,11 @@ const styles = StyleSheet.create({
     marginLeft: width / 2
   },
   peak: {
-    width: 4,
+    width: 3,
     marginRight: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
-  panResponder: {
+  scrollView: {
     position: 'absolute',
     top: 0,
     left: 0,

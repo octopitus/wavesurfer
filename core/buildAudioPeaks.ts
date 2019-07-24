@@ -4,7 +4,7 @@ interface BuildOptions {
 }
 
 const defaultOptions = {
-  blockWidth: 5
+  blockWidth: 3
 }
 
 export default function buildAudioPeaks(
@@ -12,7 +12,7 @@ export default function buildAudioPeaks(
   options: BuildOptions = defaultOptions
 ) {
   const numberOfBlocks =
-    options.numberOfBlocks || Math.round(audioBuffer.duration) * 2
+    options.numberOfBlocks || Math.round(audioBuffer.duration) * 3
   const surfaceWidth = numberOfBlocks * options.blockWidth
   const leftChannel = audioBuffer.getChannelData(0)
   const blockGap = leftChannel.length / numberOfBlocks
