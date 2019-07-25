@@ -12,6 +12,7 @@
     "__DEV__": true
   },
   "env": {
+    "es6": true,
     "jest": true,
     "react-native/react-native": true
   },

@@ -15,12 +15,7 @@
     "paths": {
       "aurora/*": ["aurora/*"],
       "@assets/*": ["assets/*"],
-      "@core/*": ["core/*"],
-      "@api/*": ["src/api/*"],
-      "@auth/*": ["src/auth/*"],
-      "@navigation/*": ["src/navigation/*"],
-      "@store/*": ["src/store/*"],
-      "@setting/*": ["src/setting/*"]
+      "@core/*": ["core/*"]
     }
   },
   "exclude": [

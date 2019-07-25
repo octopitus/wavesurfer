@@ -8,7 +8,7 @@ export default function buildAudioPeaks(
   options: PeakOptions
 ) {
   const numberOfBlocks =
-    options.numberOfBlocks || Math.round(audioBuffer.duration)
+    options.numberOfBlocks || Math.round(audioBuffer.duration) * 2
   const leftChannel = audioBuffer.getChannelData(0)
   const blockGap = leftChannel.length / numberOfBlocks
   const _peaks = []

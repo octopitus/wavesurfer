@@ -26,7 +26,7 @@ interface State {
 export default class WaveSurfer extends Component<Props, State> {
   static defaultProps = {
     width: width,
-    height: 320,
+    height: 160,
     activeColor: 'green',
     inactiveColor: 'red',
     blockWidth: 3,

@@ -6,19 +6,21 @@
  * @flow
  */
 
-import React from 'react'
+import React, {useState} from 'react'
 
 import './FileReader'
 import WaveSurfer from '@core/WaveSurfer'
+import PlayList from './src/PlayList'
+import {Track} from './src/interfaces'
 
 const App = () => {
+  const [track, setTrack] = useState<Track>(null)
+
   return (
-    <WaveSurfer
-      source={{
-        uri:
-          'https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3'
-      }}
-    />
+    <>
+      <PlayList onTrackSelect={setTrack} />
+      {track ? <WaveSurfer source={{uri: track.preview_url}} /> : null}
+    </>
   )
 }
 
