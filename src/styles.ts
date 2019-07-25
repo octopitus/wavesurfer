@@ -2,7 +2,8 @@ import {StyleSheet} from 'react-native'
 
 const Colors = {
   black: '#212529',
-  gray: '#868e96'
+  gray: '#868e96',
+  white: '#FFF'
 }
 
 const styles = StyleSheet.create({
@@ -36,6 +37,42 @@ const styles = StyleSheet.create({
   },
   duration: {
     color: Colors.gray
+  },
+  panel: {
+    backgroundColor: Colors.white
+  },
+  panelContent: {
+    flex: 1,
+    padding: 24
+  },
+  slide: {
+    flex: 1,
+    position: 'relative'
+  },
+  cover: StyleSheet.absoluteFillObject,
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  },
+  slideHeader: {
+    fontSize: 28,
+    color: Colors.white
+  },
+  slideSubHeader: {
+    fontSize: 16,
+    color: Colors.white
+  },
+  btnGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  btn: {
+    tintColor: Colors.white
+  },
+  playBtn: {
+    width: 56,
+    height: 56
   }
 })
 

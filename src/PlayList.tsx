@@ -6,7 +6,7 @@ import {Track as TrackType} from './interfaces'
 import Track from './Track'
 
 interface Props {
-  onTrackSelect: (track: TrackType) => void
+  onChange: (track: TrackType) => void
 }
 
 class PlayList extends Component<Props> {
@@ -18,7 +18,7 @@ class PlayList extends Component<Props> {
             <Track
               key={track.id}
               track={track}
-              onSelect={this.props.onTrackSelect}
+              onSelect={this.props.onChange}
             />
           ))}
         </ScrollView>

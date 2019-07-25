@@ -17,6 +17,7 @@ interface Props {
   inactiveColor: string
   animatedValue: Animated.Value
   onDurationChange: (value: number) => void
+  playing: boolean
 }
 
 interface State {
@@ -32,7 +33,8 @@ export default class WaveSurfer extends Component<Props, State> {
     blockWidth: 3,
     blockPaddingInner: 1.5,
     animatedValue: new Animated.Value(0),
-    onDurationChange: () => {}
+    onDurationChange: () => {},
+    play: false
   }
 
   state = {peaks: []}
@@ -63,7 +65,7 @@ export default class WaveSurfer extends Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if (this.state.peaks.length) {
+    if (this.props.playing && this.state.peaks.length) {
       this._startAutoScrolling()
     }
   }
@@ -164,7 +166,9 @@ export default class WaveSurfer extends Component<Props, State> {
 
   render() {
     if (!this.state.peaks.length) {
-      return null
+      return (
+        <View style={{width: this.props.width, height: this.props.height}} />
+      )
     }
 
     const blockWidth = this.props.blockWidth + this.props.blockPaddingInner

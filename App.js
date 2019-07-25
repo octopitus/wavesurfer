@@ -7,20 +7,24 @@
  */
 
 import React, {useState} from 'react'
+import {YellowBox, SafeAreaView} from 'react-native'
 
 import './FileReader'
-import WaveSurfer from '@core/WaveSurfer'
+
+import SwipeablePlayer from './src/SwipeablePlayer'
 import PlayList from './src/PlayList'
 import {Track} from './src/interfaces'
+
+YellowBox.ignoreWarnings(['Warning: '])
 
 const App = () => {
   const [track, setTrack] = useState<Track>(null)
 
   return (
-    <>
-      <PlayList onTrackSelect={setTrack} />
-      {track ? <WaveSurfer source={{uri: track.preview_url}} /> : null}
-    </>
+    <SafeAreaView style={{flex: 1}}>
+      <PlayList selectedTrack={track} onChange={setTrack} />
+      <SwipeablePlayer selectedTrack={track} onChange={setTrack} />
+    </SafeAreaView>
   )
 }
 

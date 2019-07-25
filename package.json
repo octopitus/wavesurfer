@@ -12,10 +12,12 @@
     "events": "^1.1.1",
     "react": "16.8.6",
     "react-native": "0.60.3",
+    "react-native-swiper": "^1.5.14",
     "react-redux": "^7.x.x",
     "redux": "^4.x.x",
     "redux-thunk": "^2.x.x",
     "rn-fetch-blob": "^0.10.16",
+    "rn-sliding-up-panel": "^2.3.1",
     "web-audio-engine": "^0.13.4"
   },
   "devDependencies": {
