@@ -1,5 +1,5 @@
-import AV from "./aurora";
-import "./decoder";
-import "./demuxer";
+import AV from './aurora'
+import './decoder'
+import './demuxer'
 
-export default AV;
+export default AV

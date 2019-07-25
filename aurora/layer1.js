@@ -1,22 +1,22 @@
-const tables = require("./tables");
-const MP3FrameHeader = require("./header");
-const MP3Frame = require("./frame");
-const utils = require("./utils");
+const tables = require('./tables')
+const MP3FrameHeader = require('./header')
+const MP3Frame = require('./frame')
+const utils = require('./utils')
 
 class Layer1 {
   constructor() {
-    this.allocation = utils.makeArray([2, 32], Uint8Array);
-    this.scalefactor = utils.makeArray([2, 32], Uint8Array);
+    this.allocation = utils.makeArray([2, 32], Uint8Array)
+    this.scalefactor = utils.makeArray([2, 32], Uint8Array)
   }
 
   decode(stream, frame) {
-    const header = frame.header;
-    const nch = header.nchannels();
+    const header = frame.header
+    const nch = header.nchannels()
 
-    let bound = 32;
+    let bound = 32
     if (header.mode === MP3FrameHeader.MODE.JOINT_STEREO) {
-      header.flags |= MP3FrameHeader.FLAGS.I_STEREO;
-      bound = 4 + header.mode_extension * 4;
+      header.flags |= MP3FrameHeader.FLAGS.I_STEREO
+      bound = 4 + header.mode_extension * 4
     }
 
     if (header.flags & MP3FrameHeader.FLAGS.PROTECTION) {
@@ -24,33 +24,33 @@ class Layer1 {
     }
 
     // decode bit allocations
-    const allocation = this.allocation;
+    const allocation = this.allocation
     for (var sb = 0; sb < bound; sb++) {
       for (var ch = 0; ch < nch; ch++) {
-        var nb = stream.read(4);
+        var nb = stream.read(4)
         if (nb === 15) {
-          throw new Error("forbidden bit allocation value");
+          throw new Error('forbidden bit allocation value')
         }
 
-        allocation[ch][sb] = nb ? nb + 1 : 0;
+        allocation[ch][sb] = nb ? nb + 1 : 0
       }
     }
 
     for (var sb = bound; sb < 32; sb++) {
-      var nb = stream.read(4);
+      var nb = stream.read(4)
       if (nb === 15) {
-        throw new Error("forbidden bit allocation value");
+        throw new Error('forbidden bit allocation value')
       }
 
-      allocation[0][sb] = allocation[1][sb] = nb ? nb + 1 : 0;
+      allocation[0][sb] = allocation[1][sb] = nb ? nb + 1 : 0
     }
 
     // decode scalefactors
-    const scalefactor = this.scalefactor;
+    const scalefactor = this.scalefactor
     for (var sb = 0; sb < 32; sb++) {
       for (var ch = 0; ch < nch; ch++) {
         if (allocation[ch][sb]) {
-          scalefactor[ch][sb] = stream.read(6);
+          scalefactor[ch][sb] = stream.read(6)
 
           /*
            * Scalefactor index 63 does not appear in Table B.1 of
@@ -65,25 +65,25 @@ class Layer1 {
     for (let s = 0; s < 12; s++) {
       for (var sb = 0; sb < bound; sb++) {
         for (var ch = 0; ch < nch; ch++) {
-          var nb = allocation[ch][sb];
+          var nb = allocation[ch][sb]
           frame.sbsample[ch][s][sb] = nb
             ? this.sample(stream, nb) * tables.SF_TABLE[scalefactor[ch][sb]]
-            : 0;
+            : 0
         }
       }
 
       for (var sb = bound; sb < 32; sb++) {
-        var nb = allocation[0][sb];
+        var nb = allocation[0][sb]
         if (nb) {
-          const sample = this.sample(stream, nb);
+          const sample = this.sample(stream, nb)
 
           for (var ch = 0; ch < nch; ch++) {
             frame.sbsample[ch][s][sb] =
-              sample * tables.SF_TABLE[scalefactor[ch][sb]];
+              sample * tables.SF_TABLE[scalefactor[ch][sb]]
           }
         } else {
           for (var ch = 0; ch < nch; ch++) {
-            frame.sbsample[ch][s][sb] = 0;
+            frame.sbsample[ch][s][sb] = 0
           }
         }
       }
@@ -91,21 +91,21 @@ class Layer1 {
   }
 
   sample(stream, nb) {
-    let sample = stream.read(nb);
+    let sample = stream.read(nb)
 
     // invert most significant bit, and form a 2's complement sample
-    sample ^= 1 << (nb - 1);
-    sample |= -(sample & (1 << (nb - 1)));
-    sample /= 1 << (nb - 1);
+    sample ^= 1 << (nb - 1)
+    sample |= -(sample & (1 << (nb - 1)))
+    sample /= 1 << (nb - 1)
 
     // requantize the sample
     // s'' = (2^nb / (2^nb - 1)) * (s''' + 2^(-nb + 1))
-    sample += 1 >> (nb - 1);
-    return sample * LINEAR_TABLE[nb - 2];
+    sample += 1 >> (nb - 1)
+    return sample * LINEAR_TABLE[nb - 2]
   }
 }
 
-MP3Frame.layers[1] = Layer1;
+MP3Frame.layers[1] = Layer1
 
 // linear scaling table
 const LINEAR_TABLE = new Float32Array([
@@ -123,6 +123,6 @@ const LINEAR_TABLE = new Float32Array([
   1.00012208521548,
   1.00006103888177,
   1.00003051850948
-]);
+])
 
-module.exports = Layer1;
+module.exports = Layer1

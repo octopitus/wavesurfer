@@ -1,31 +1,31 @@
-const utils = require("./utils");
+const utils = require('./utils')
 
 class MP3Synth {
   constructor() {
-    this.filter = utils.makeArray([2, 2, 2, 16, 8]); // polyphase filterbank outputs
-    this.phase = 0;
+    this.filter = utils.makeArray([2, 2, 2, 16, 8]) // polyphase filterbank outputs
+    this.phase = 0
 
     this.pcm = {
       samplerate: 0,
       channels: 0,
       length: 0,
       samples: [new Float64Array(1152), new Float64Array(1152)]
-    };
+    }
   }
 
   /*
    * perform full frequency PCM synthesis
    */
   full(frame, nch, ns) {
-    let Dptr, hi, lo, ptr;
+    let Dptr, hi, lo, ptr
 
     for (let ch = 0; ch < nch; ++ch) {
-      const sbsample = frame.sbsample[ch];
-      const filter = this.filter[ch];
-      const pcm = this.pcm.samples[ch];
-      let phase = this.phase;
-      let pcm1Ptr = 0;
-      let pcm2Ptr = 0;
+      const sbsample = frame.sbsample[ch]
+      const filter = this.filter[ch]
+      const pcm = this.pcm.samples[ch]
+      let phase = this.phase
+      let pcm1Ptr = 0
+      let pcm2Ptr = 0
 
       for (let s = 0; s < ns; ++s) {
         MP3Synth.dct32(
@@ -33,118 +33,118 @@ class MP3Synth {
           phase >> 1,
           filter[0][phase & 1],
           filter[1][phase & 1]
-        );
+        )
 
-        const pe = phase & ~1;
-        const po = ((phase - 1) & 0xf) | 1;
+        const pe = phase & ~1
+        const po = ((phase - 1) & 0xf) | 1
 
         /* calculate 32 samples */
-        const fe = filter[0][phase & 1];
-        const fx = filter[0][~phase & 1];
-        const fo = filter[1][~phase & 1];
+        const fe = filter[0][phase & 1]
+        const fx = filter[0][~phase & 1]
+        const fo = filter[1][~phase & 1]
 
-        let fePtr = 0;
-        const fxPtr = 0;
-        let foPtr = 0;
+        let fePtr = 0
+        const fxPtr = 0
+        let foPtr = 0
 
-        Dptr = 0;
+        Dptr = 0
 
-        ptr = D[Dptr];
-        let _fx = fx[fxPtr];
-        let _fe = fe[fePtr];
+        ptr = D[Dptr]
+        let _fx = fx[fxPtr]
+        let _fe = fe[fePtr]
 
-        lo = _fx[0] * ptr[po + 0];
-        lo += _fx[1] * ptr[po + 14];
-        lo += _fx[2] * ptr[po + 12];
-        lo += _fx[3] * ptr[po + 10];
-        lo += _fx[4] * ptr[po + 8];
-        lo += _fx[5] * ptr[po + 6];
-        lo += _fx[6] * ptr[po + 4];
-        lo += _fx[7] * ptr[po + 2];
-        lo = -lo;
+        lo = _fx[0] * ptr[po + 0]
+        lo += _fx[1] * ptr[po + 14]
+        lo += _fx[2] * ptr[po + 12]
+        lo += _fx[3] * ptr[po + 10]
+        lo += _fx[4] * ptr[po + 8]
+        lo += _fx[5] * ptr[po + 6]
+        lo += _fx[6] * ptr[po + 4]
+        lo += _fx[7] * ptr[po + 2]
+        lo = -lo
 
-        lo += _fe[0] * ptr[pe + 0];
-        lo += _fe[1] * ptr[pe + 14];
-        lo += _fe[2] * ptr[pe + 12];
-        lo += _fe[3] * ptr[pe + 10];
-        lo += _fe[4] * ptr[pe + 8];
-        lo += _fe[5] * ptr[pe + 6];
-        lo += _fe[6] * ptr[pe + 4];
-        lo += _fe[7] * ptr[pe + 2];
+        lo += _fe[0] * ptr[pe + 0]
+        lo += _fe[1] * ptr[pe + 14]
+        lo += _fe[2] * ptr[pe + 12]
+        lo += _fe[3] * ptr[pe + 10]
+        lo += _fe[4] * ptr[pe + 8]
+        lo += _fe[5] * ptr[pe + 6]
+        lo += _fe[6] * ptr[pe + 4]
+        lo += _fe[7] * ptr[pe + 2]
 
-        pcm[pcm1Ptr++] = lo;
-        pcm2Ptr = pcm1Ptr + 30;
+        pcm[pcm1Ptr++] = lo
+        pcm2Ptr = pcm1Ptr + 30
 
         for (let sb = 1; sb < 16; ++sb) {
-          ++fePtr;
-          ++Dptr;
+          ++fePtr
+          ++Dptr
 
           /* D[32 - sb][i] === -D[sb][31 - i] */
 
-          ptr = D[Dptr];
-          let _fo = fo[foPtr];
-          let _fe = fe[fePtr];
+          ptr = D[Dptr]
+          let _fo = fo[foPtr]
+          let _fe = fe[fePtr]
 
-          lo = _fo[0] * ptr[po + 0];
-          lo += _fo[1] * ptr[po + 14];
-          lo += _fo[2] * ptr[po + 12];
-          lo += _fo[3] * ptr[po + 10];
-          lo += _fo[4] * ptr[po + 8];
-          lo += _fo[5] * ptr[po + 6];
-          lo += _fo[6] * ptr[po + 4];
-          lo += _fo[7] * ptr[po + 2];
-          lo = -lo;
+          lo = _fo[0] * ptr[po + 0]
+          lo += _fo[1] * ptr[po + 14]
+          lo += _fo[2] * ptr[po + 12]
+          lo += _fo[3] * ptr[po + 10]
+          lo += _fo[4] * ptr[po + 8]
+          lo += _fo[5] * ptr[po + 6]
+          lo += _fo[6] * ptr[po + 4]
+          lo += _fo[7] * ptr[po + 2]
+          lo = -lo
 
-          lo += _fe[7] * ptr[pe + 2];
-          lo += _fe[6] * ptr[pe + 4];
-          lo += _fe[5] * ptr[pe + 6];
-          lo += _fe[4] * ptr[pe + 8];
-          lo += _fe[3] * ptr[pe + 10];
-          lo += _fe[2] * ptr[pe + 12];
-          lo += _fe[1] * ptr[pe + 14];
-          lo += _fe[0] * ptr[pe + 0];
+          lo += _fe[7] * ptr[pe + 2]
+          lo += _fe[6] * ptr[pe + 4]
+          lo += _fe[5] * ptr[pe + 6]
+          lo += _fe[4] * ptr[pe + 8]
+          lo += _fe[3] * ptr[pe + 10]
+          lo += _fe[2] * ptr[pe + 12]
+          lo += _fe[1] * ptr[pe + 14]
+          lo += _fe[0] * ptr[pe + 0]
 
-          pcm[pcm1Ptr++] = lo;
+          pcm[pcm1Ptr++] = lo
 
-          lo = _fe[0] * ptr[-pe + 31 - 16];
-          lo += _fe[1] * ptr[-pe + 31 - 14];
-          lo += _fe[2] * ptr[-pe + 31 - 12];
-          lo += _fe[3] * ptr[-pe + 31 - 10];
-          lo += _fe[4] * ptr[-pe + 31 - 8];
-          lo += _fe[5] * ptr[-pe + 31 - 6];
-          lo += _fe[6] * ptr[-pe + 31 - 4];
-          lo += _fe[7] * ptr[-pe + 31 - 2];
+          lo = _fe[0] * ptr[-pe + 31 - 16]
+          lo += _fe[1] * ptr[-pe + 31 - 14]
+          lo += _fe[2] * ptr[-pe + 31 - 12]
+          lo += _fe[3] * ptr[-pe + 31 - 10]
+          lo += _fe[4] * ptr[-pe + 31 - 8]
+          lo += _fe[5] * ptr[-pe + 31 - 6]
+          lo += _fe[6] * ptr[-pe + 31 - 4]
+          lo += _fe[7] * ptr[-pe + 31 - 2]
 
-          lo += _fo[7] * ptr[-po + 31 - 2];
-          lo += _fo[6] * ptr[-po + 31 - 4];
-          lo += _fo[5] * ptr[-po + 31 - 6];
-          lo += _fo[4] * ptr[-po + 31 - 8];
-          lo += _fo[3] * ptr[-po + 31 - 10];
-          lo += _fo[2] * ptr[-po + 31 - 12];
-          lo += _fo[1] * ptr[-po + 31 - 14];
-          lo += _fo[0] * ptr[-po + 31 - 16];
+          lo += _fo[7] * ptr[-po + 31 - 2]
+          lo += _fo[6] * ptr[-po + 31 - 4]
+          lo += _fo[5] * ptr[-po + 31 - 6]
+          lo += _fo[4] * ptr[-po + 31 - 8]
+          lo += _fo[3] * ptr[-po + 31 - 10]
+          lo += _fo[2] * ptr[-po + 31 - 12]
+          lo += _fo[1] * ptr[-po + 31 - 14]
+          lo += _fo[0] * ptr[-po + 31 - 16]
 
-          pcm[pcm2Ptr--] = lo;
-          ++foPtr;
+          pcm[pcm2Ptr--] = lo
+          ++foPtr
         }
 
-        ++Dptr;
+        ++Dptr
 
-        ptr = D[Dptr];
-        let _fo = fo[foPtr];
+        ptr = D[Dptr]
+        let _fo = fo[foPtr]
 
-        lo = _fo[0] * ptr[po + 0];
-        lo += _fo[1] * ptr[po + 14];
-        lo += _fo[2] * ptr[po + 12];
-        lo += _fo[3] * ptr[po + 10];
-        lo += _fo[4] * ptr[po + 8];
-        lo += _fo[5] * ptr[po + 6];
-        lo += _fo[6] * ptr[po + 4];
-        lo += _fo[7] * ptr[po + 2];
+        lo = _fo[0] * ptr[po + 0]
+        lo += _fo[1] * ptr[po + 14]
+        lo += _fo[2] * ptr[po + 12]
+        lo += _fo[3] * ptr[po + 10]
+        lo += _fo[4] * ptr[po + 8]
+        lo += _fo[5] * ptr[po + 6]
+        lo += _fo[6] * ptr[po + 4]
+        lo += _fo[7] * ptr[po + 2]
 
-        pcm[pcm1Ptr] = -lo;
-        pcm1Ptr += 16;
-        phase = (phase + 1) % 16;
+        pcm[pcm1Ptr] = -lo
+        pcm1Ptr += 16
+        phase = (phase + 1) % 16
       }
     }
   }
@@ -156,12 +156,12 @@ class MP3Synth {
    * DESCRIPTION: perform PCM synthesis of frame subband samples
    */
   frame(frame) {
-    const nch = frame.header.nchannels();
-    const ns = frame.header.nbsamples();
+    const nch = frame.header.nchannels()
+    const ns = frame.header.nbsamples()
 
-    this.pcm.samplerate = frame.header.samplerate;
-    this.pcm.channels = nch;
-    this.pcm.length = 32 * ns;
+    this.pcm.samplerate = frame.header.samplerate
+    this.pcm.channels = nch
+    this.pcm.length = 32 * ns
 
     /*
     if (frame.options & Mad.Option.HALFSAMPLERATE) {
@@ -172,380 +172,380 @@ class MP3Synth {
     }
     */
 
-    this.full(frame, nch, ns);
-    this.phase = (this.phase + ns) % 16;
+    this.full(frame, nch, ns)
+    this.phase = (this.phase + ns) % 16
   }
 }
 
 /* costab[i] = cos(PI / (2 * 32) * i) */
-const costab1 = 0.998795456;
-const costab2 = 0.995184727;
-const costab3 = 0.98917651;
-const costab4 = 0.98078528;
-const costab5 = 0.970031253;
-const costab6 = 0.956940336;
-const costab7 = 0.941544065;
-const costab8 = 0.923879533;
-const costab9 = 0.903989293;
-const costab10 = 0.881921264;
-const costab11 = 0.85772861;
-const costab12 = 0.831469612;
-const costab13 = 0.803207531;
-const costab14 = 0.773010453;
-const costab15 = 0.740951125;
-const costab16 = 0.707106781;
-const costab17 = 0.671558955;
-const costab18 = 0.634393284;
-const costab19 = 0.595699304;
-const costab20 = 0.555570233;
-const costab21 = 0.514102744;
-const costab22 = 0.471396737;
-const costab23 = 0.427555093;
-const costab24 = 0.382683432;
-const costab25 = 0.336889853;
-const costab26 = 0.290284677;
-const costab27 = 0.24298018;
-const costab28 = 0.195090322;
-const costab29 = 0.146730474;
-const costab30 = 0.09801714;
-const costab31 = 0.049067674;
+const costab1 = 0.998795456
+const costab2 = 0.995184727
+const costab3 = 0.98917651
+const costab4 = 0.98078528
+const costab5 = 0.970031253
+const costab6 = 0.956940336
+const costab7 = 0.941544065
+const costab8 = 0.923879533
+const costab9 = 0.903989293
+const costab10 = 0.881921264
+const costab11 = 0.85772861
+const costab12 = 0.831469612
+const costab13 = 0.803207531
+const costab14 = 0.773010453
+const costab15 = 0.740951125
+const costab16 = 0.707106781
+const costab17 = 0.671558955
+const costab18 = 0.634393284
+const costab19 = 0.595699304
+const costab20 = 0.555570233
+const costab21 = 0.514102744
+const costab22 = 0.471396737
+const costab23 = 0.427555093
+const costab24 = 0.382683432
+const costab25 = 0.336889853
+const costab26 = 0.290284677
+const costab27 = 0.24298018
+const costab28 = 0.195090322
+const costab29 = 0.146730474
+const costab30 = 0.09801714
+const costab31 = 0.049067674
 
 /*
  * NAME:    dct32()
  * DESCRIPTION: perform fast in[32].out[32] DCT
  */
 MP3Synth.dct32 = (_in, slot, lo, hi) => {
-  let t0, t1, t2, t3, t4, t5, t6, t7;
-  let t8, t9, t10, t11, t12, t13, t14, t15;
-  let t16, t17, t18, t19, t20, t21, t22, t23;
-  let t24, t25, t26, t27, t28, t29, t30, t31;
-  let t32, t33, t34, t35, t36, t37, t38, t39;
-  let t40, t41, t42, t43, t44, t45, t46, t47;
-  let t48, t49, t50, t51, t52, t53, t54, t55;
-  let t56, t57, t58, t59, t60, t61, t62, t63;
-  let t64, t65, t66, t67, t68, t69, t70, t71;
-  let t72, t73, t74, t75, t76, t77, t78, t79;
-  let t80, t81, t82, t83, t84, t85, t86, t87;
-  let t88, t89, t90, t91, t92, t93, t94, t95;
-  let t96, t97, t98, t99, t100, t101, t102, t103;
-  let t104, t105, t106, t107, t108, t109, t110, t111;
-  let t112, t113, t114, t115, t116, t117, t118, t119;
-  let t120, t121, t122, t123, t124, t125, t126, t127;
-  let t128, t129, t130, t131, t132, t133, t134, t135;
-  let t136, t137, t138, t139, t140, t141, t142, t143;
-  let t144, t145, t146, t147, t148, t149, t150, t151;
-  let t152, t153, t154, t155, t156, t157, t158, t159;
-  let t160, t161, t162, t163, t164, t165, t166, t167;
-  let t168, t169, t170, t171, t172, t173, t174, t175;
-  let t176;
-
-  t0 = _in[0] + _in[31];
-  t16 = (_in[0] - _in[31]) * costab1;
-  t1 = _in[15] + _in[16];
-  t17 = (_in[15] - _in[16]) * costab31;
-
-  t41 = t16 + t17;
-  t59 = (t16 - t17) * costab2;
-  t33 = t0 + t1;
-  t50 = (t0 - t1) * costab2;
-
-  t2 = _in[7] + _in[24];
-  t18 = (_in[7] - _in[24]) * costab15;
-  t3 = _in[8] + _in[23];
-  t19 = (_in[8] - _in[23]) * costab17;
-
-  t42 = t18 + t19;
-  t60 = (t18 - t19) * costab30;
-  t34 = t2 + t3;
-  t51 = (t2 - t3) * costab30;
-
-  t4 = _in[3] + _in[28];
-  t20 = (_in[3] - _in[28]) * costab7;
-  t5 = _in[12] + _in[19];
-  t21 = (_in[12] - _in[19]) * costab25;
-
-  t43 = t20 + t21;
-  t61 = (t20 - t21) * costab14;
-  t35 = t4 + t5;
-  t52 = (t4 - t5) * costab14;
-
-  t6 = _in[4] + _in[27];
-  t22 = (_in[4] - _in[27]) * costab9;
-  t7 = _in[11] + _in[20];
-  t23 = (_in[11] - _in[20]) * costab23;
-
-  t44 = t22 + t23;
-  t62 = (t22 - t23) * costab18;
-  t36 = t6 + t7;
-  t53 = (t6 - t7) * costab18;
-
-  t8 = _in[1] + _in[30];
-  t24 = (_in[1] - _in[30]) * costab3;
-  t9 = _in[14] + _in[17];
-  t25 = (_in[14] - _in[17]) * costab29;
-
-  t45 = t24 + t25;
-  t63 = (t24 - t25) * costab6;
-  t37 = t8 + t9;
-  t54 = (t8 - t9) * costab6;
-
-  t10 = _in[6] + _in[25];
-  t26 = (_in[6] - _in[25]) * costab13;
-  t11 = _in[9] + _in[22];
-  t27 = (_in[9] - _in[22]) * costab19;
-
-  t46 = t26 + t27;
-  t64 = (t26 - t27) * costab26;
-  t38 = t10 + t11;
-  t55 = (t10 - t11) * costab26;
-
-  t12 = _in[2] + _in[29];
-  t28 = (_in[2] - _in[29]) * costab5;
-  t13 = _in[13] + _in[18];
-  t29 = (_in[13] - _in[18]) * costab27;
-
-  t47 = t28 + t29;
-  t65 = (t28 - t29) * costab10;
-  t39 = t12 + t13;
-  t56 = (t12 - t13) * costab10;
-
-  t14 = _in[5] + _in[26];
-  t30 = (_in[5] - _in[26]) * costab11;
-  t15 = _in[10] + _in[21];
-  t31 = (_in[10] - _in[21]) * costab21;
-
-  t48 = t30 + t31;
-  t66 = (t30 - t31) * costab22;
-  t40 = t14 + t15;
-  t57 = (t14 - t15) * costab22;
+  let t0, t1, t2, t3, t4, t5, t6, t7
+  let t8, t9, t10, t11, t12, t13, t14, t15
+  let t16, t17, t18, t19, t20, t21, t22, t23
+  let t24, t25, t26, t27, t28, t29, t30, t31
+  let t32, t33, t34, t35, t36, t37, t38, t39
+  let t40, t41, t42, t43, t44, t45, t46, t47
+  let t48, t49, t50, t51, t52, t53, t54, t55
+  let t56, t57, t58, t59, t60, t61, t62, t63
+  let t64, t65, t66, t67, t68, t69, t70, t71
+  let t72, t73, t74, t75, t76, t77, t78, t79
+  let t80, t81, t82, t83, t84, t85, t86, t87
+  let t88, t89, t90, t91, t92, t93, t94, t95
+  let t96, t97, t98, t99, t100, t101, t102, t103
+  let t104, t105, t106, t107, t108, t109, t110, t111
+  let t112, t113, t114, t115, t116, t117, t118, t119
+  let t120, t121, t122, t123, t124, t125, t126, t127
+  let t128, t129, t130, t131, t132, t133, t134, t135
+  let t136, t137, t138, t139, t140, t141, t142, t143
+  let t144, t145, t146, t147, t148, t149, t150, t151
+  let t152, t153, t154, t155, t156, t157, t158, t159
+  let t160, t161, t162, t163, t164, t165, t166, t167
+  let t168, t169, t170, t171, t172, t173, t174, t175
+  let t176
+
+  t0 = _in[0] + _in[31]
+  t16 = (_in[0] - _in[31]) * costab1
+  t1 = _in[15] + _in[16]
+  t17 = (_in[15] - _in[16]) * costab31
+
+  t41 = t16 + t17
+  t59 = (t16 - t17) * costab2
+  t33 = t0 + t1
+  t50 = (t0 - t1) * costab2
+
+  t2 = _in[7] + _in[24]
+  t18 = (_in[7] - _in[24]) * costab15
+  t3 = _in[8] + _in[23]
+  t19 = (_in[8] - _in[23]) * costab17
+
+  t42 = t18 + t19
+  t60 = (t18 - t19) * costab30
+  t34 = t2 + t3
+  t51 = (t2 - t3) * costab30
+
+  t4 = _in[3] + _in[28]
+  t20 = (_in[3] - _in[28]) * costab7
+  t5 = _in[12] + _in[19]
+  t21 = (_in[12] - _in[19]) * costab25
+
+  t43 = t20 + t21
+  t61 = (t20 - t21) * costab14
+  t35 = t4 + t5
+  t52 = (t4 - t5) * costab14
+
+  t6 = _in[4] + _in[27]
+  t22 = (_in[4] - _in[27]) * costab9
+  t7 = _in[11] + _in[20]
+  t23 = (_in[11] - _in[20]) * costab23
+
+  t44 = t22 + t23
+  t62 = (t22 - t23) * costab18
+  t36 = t6 + t7
+  t53 = (t6 - t7) * costab18
+
+  t8 = _in[1] + _in[30]
+  t24 = (_in[1] - _in[30]) * costab3
+  t9 = _in[14] + _in[17]
+  t25 = (_in[14] - _in[17]) * costab29
+
+  t45 = t24 + t25
+  t63 = (t24 - t25) * costab6
+  t37 = t8 + t9
+  t54 = (t8 - t9) * costab6
+
+  t10 = _in[6] + _in[25]
+  t26 = (_in[6] - _in[25]) * costab13
+  t11 = _in[9] + _in[22]
+  t27 = (_in[9] - _in[22]) * costab19
+
+  t46 = t26 + t27
+  t64 = (t26 - t27) * costab26
+  t38 = t10 + t11
+  t55 = (t10 - t11) * costab26
+
+  t12 = _in[2] + _in[29]
+  t28 = (_in[2] - _in[29]) * costab5
+  t13 = _in[13] + _in[18]
+  t29 = (_in[13] - _in[18]) * costab27
+
+  t47 = t28 + t29
+  t65 = (t28 - t29) * costab10
+  t39 = t12 + t13
+  t56 = (t12 - t13) * costab10
+
+  t14 = _in[5] + _in[26]
+  t30 = (_in[5] - _in[26]) * costab11
+  t15 = _in[10] + _in[21]
+  t31 = (_in[10] - _in[21]) * costab21
+
+  t48 = t30 + t31
+  t66 = (t30 - t31) * costab22
+  t40 = t14 + t15
+  t57 = (t14 - t15) * costab22
 
-  t69 = t33 + t34;
-  t89 = (t33 - t34) * costab4;
-  t70 = t35 + t36;
-  t90 = (t35 - t36) * costab28;
-  t71 = t37 + t38;
-  t91 = (t37 - t38) * costab12;
-  t72 = t39 + t40;
-  t92 = (t39 - t40) * costab20;
-  t73 = t41 + t42;
-  t94 = (t41 - t42) * costab4;
-  t74 = t43 + t44;
-  t95 = (t43 - t44) * costab28;
-  t75 = t45 + t46;
-  t96 = (t45 - t46) * costab12;
-  t76 = t47 + t48;
-  t97 = (t47 - t48) * costab20;
+  t69 = t33 + t34
+  t89 = (t33 - t34) * costab4
+  t70 = t35 + t36
+  t90 = (t35 - t36) * costab28
+  t71 = t37 + t38
+  t91 = (t37 - t38) * costab12
+  t72 = t39 + t40
+  t92 = (t39 - t40) * costab20
+  t73 = t41 + t42
+  t94 = (t41 - t42) * costab4
+  t74 = t43 + t44
+  t95 = (t43 - t44) * costab28
+  t75 = t45 + t46
+  t96 = (t45 - t46) * costab12
+  t76 = t47 + t48
+  t97 = (t47 - t48) * costab20
 
-  t78 = t50 + t51;
-  t100 = (t50 - t51) * costab4;
-  t79 = t52 + t53;
-  t101 = (t52 - t53) * costab28;
-  t80 = t54 + t55;
-  t102 = (t54 - t55) * costab12;
-  t81 = t56 + t57;
-  t103 = (t56 - t57) * costab20;
+  t78 = t50 + t51
+  t100 = (t50 - t51) * costab4
+  t79 = t52 + t53
+  t101 = (t52 - t53) * costab28
+  t80 = t54 + t55
+  t102 = (t54 - t55) * costab12
+  t81 = t56 + t57
+  t103 = (t56 - t57) * costab20
 
-  t83 = t59 + t60;
-  t106 = (t59 - t60) * costab4;
-  t84 = t61 + t62;
-  t107 = (t61 - t62) * costab28;
-  t85 = t63 + t64;
-  t108 = (t63 - t64) * costab12;
-  t86 = t65 + t66;
-  t109 = (t65 - t66) * costab20;
+  t83 = t59 + t60
+  t106 = (t59 - t60) * costab4
+  t84 = t61 + t62
+  t107 = (t61 - t62) * costab28
+  t85 = t63 + t64
+  t108 = (t63 - t64) * costab12
+  t86 = t65 + t66
+  t109 = (t65 - t66) * costab20
 
-  t113 = t69 + t70;
-  t114 = t71 + t72;
+  t113 = t69 + t70
+  t114 = t71 + t72
 
-  /*  0 */ hi[15][slot] = t113 + t114;
-  /* 16 */ lo[0][slot] = (t113 - t114) * costab16;
+  /*  0 */ hi[15][slot] = t113 + t114
+  /* 16 */ lo[0][slot] = (t113 - t114) * costab16
 
-  t115 = t73 + t74;
-  t116 = t75 + t76;
+  t115 = t73 + t74
+  t116 = t75 + t76
 
-  t32 = t115 + t116;
+  t32 = t115 + t116
 
-  /*  1 */ hi[14][slot] = t32;
+  /*  1 */ hi[14][slot] = t32
 
-  t118 = t78 + t79;
-  t119 = t80 + t81;
+  t118 = t78 + t79
+  t119 = t80 + t81
 
-  t58 = t118 + t119;
+  t58 = t118 + t119
 
-  /*  2 */ hi[13][slot] = t58;
+  /*  2 */ hi[13][slot] = t58
 
-  t121 = t83 + t84;
-  t122 = t85 + t86;
+  t121 = t83 + t84
+  t122 = t85 + t86
 
-  t67 = t121 + t122;
+  t67 = t121 + t122
 
-  t49 = t67 * 2 - t32;
+  t49 = t67 * 2 - t32
 
-  /*  3 */ hi[12][slot] = t49;
+  /*  3 */ hi[12][slot] = t49
 
-  t125 = t89 + t90;
-  t126 = t91 + t92;
+  t125 = t89 + t90
+  t126 = t91 + t92
 
-  t93 = t125 + t126;
+  t93 = t125 + t126
 
-  /*  4 */ hi[11][slot] = t93;
+  /*  4 */ hi[11][slot] = t93
 
-  t128 = t94 + t95;
-  t129 = t96 + t97;
+  t128 = t94 + t95
+  t129 = t96 + t97
 
-  t98 = t128 + t129;
+  t98 = t128 + t129
 
-  t68 = t98 * 2 - t49;
+  t68 = t98 * 2 - t49
 
-  /*  5 */ hi[10][slot] = t68;
+  /*  5 */ hi[10][slot] = t68
 
-  t132 = t100 + t101;
-  t133 = t102 + t103;
+  t132 = t100 + t101
+  t133 = t102 + t103
 
-  t104 = t132 + t133;
+  t104 = t132 + t133
 
-  t82 = t104 * 2 - t58;
+  t82 = t104 * 2 - t58
 
-  /*  6 */ hi[9][slot] = t82;
+  /*  6 */ hi[9][slot] = t82
 
-  t136 = t106 + t107;
-  t137 = t108 + t109;
+  t136 = t106 + t107
+  t137 = t108 + t109
 
-  t110 = t136 + t137;
+  t110 = t136 + t137
 
-  t87 = t110 * 2 - t67;
+  t87 = t110 * 2 - t67
 
-  t77 = t87 * 2 - t68;
+  t77 = t87 * 2 - t68
 
-  /*  7 */ hi[8][slot] = t77;
+  /*  7 */ hi[8][slot] = t77
 
-  t141 = (t69 - t70) * costab8;
-  t142 = (t71 - t72) * costab24;
-  t143 = t141 + t142;
+  t141 = (t69 - t70) * costab8
+  t142 = (t71 - t72) * costab24
+  t143 = t141 + t142
 
-  /*  8 */ hi[7][slot] = t143;
-  /* 24 */ lo[8][slot] = (t141 - t142) * costab16 * 2 - t143;
+  /*  8 */ hi[7][slot] = t143
+  /* 24 */ lo[8][slot] = (t141 - t142) * costab16 * 2 - t143
 
-  t144 = (t73 - t74) * costab8;
-  t145 = (t75 - t76) * costab24;
-  t146 = t144 + t145;
+  t144 = (t73 - t74) * costab8
+  t145 = (t75 - t76) * costab24
+  t146 = t144 + t145
 
-  t88 = t146 * 2 - t77;
+  t88 = t146 * 2 - t77
 
-  /*  9 */ hi[6][slot] = t88;
+  /*  9 */ hi[6][slot] = t88
 
-  t148 = (t78 - t79) * costab8;
-  t149 = (t80 - t81) * costab24;
-  t150 = t148 + t149;
+  t148 = (t78 - t79) * costab8
+  t149 = (t80 - t81) * costab24
+  t150 = t148 + t149
 
-  t105 = t150 * 2 - t82;
+  t105 = t150 * 2 - t82
 
-  /* 10 */ hi[5][slot] = t105;
+  /* 10 */ hi[5][slot] = t105
 
-  t152 = (t83 - t84) * costab8;
-  t153 = (t85 - t86) * costab24;
-  t154 = t152 + t153;
+  t152 = (t83 - t84) * costab8
+  t153 = (t85 - t86) * costab24
+  t154 = t152 + t153
 
-  t111 = t154 * 2 - t87;
+  t111 = t154 * 2 - t87
 
-  t99 = t111 * 2 - t88;
+  t99 = t111 * 2 - t88
 
-  /* 11 */ hi[4][slot] = t99;
+  /* 11 */ hi[4][slot] = t99
 
-  t157 = (t89 - t90) * costab8;
-  t158 = (t91 - t92) * costab24;
-  t159 = t157 + t158;
+  t157 = (t89 - t90) * costab8
+  t158 = (t91 - t92) * costab24
+  t159 = t157 + t158
 
-  t127 = t159 * 2 - t93;
+  t127 = t159 * 2 - t93
 
-  /* 12 */ hi[3][slot] = t127;
+  /* 12 */ hi[3][slot] = t127
 
-  t160 = (t125 - t126) * costab16 * 2 - t127;
+  t160 = (t125 - t126) * costab16 * 2 - t127
 
-  /* 20 */ lo[4][slot] = t160;
-  /* 28 */ lo[12][slot] = ((t157 - t158) * costab16 * 2 - t159) * 2 - t160;
+  /* 20 */ lo[4][slot] = t160
+  /* 28 */ lo[12][slot] = ((t157 - t158) * costab16 * 2 - t159) * 2 - t160
 
-  t161 = (t94 - t95) * costab8;
-  t162 = (t96 - t97) * costab24;
-  t163 = t161 + t162;
+  t161 = (t94 - t95) * costab8
+  t162 = (t96 - t97) * costab24
+  t163 = t161 + t162
 
-  t130 = t163 * 2 - t98;
+  t130 = t163 * 2 - t98
 
-  t112 = t130 * 2 - t99;
+  t112 = t130 * 2 - t99
 
-  /* 13 */ hi[2][slot] = t112;
+  /* 13 */ hi[2][slot] = t112
 
-  t164 = (t128 - t129) * costab16 * 2 - t130;
+  t164 = (t128 - t129) * costab16 * 2 - t130
 
-  t166 = (t100 - t101) * costab8;
-  t167 = (t102 - t103) * costab24;
-  t168 = t166 + t167;
+  t166 = (t100 - t101) * costab8
+  t167 = (t102 - t103) * costab24
+  t168 = t166 + t167
 
-  t134 = t168 * 2 - t104;
+  t134 = t168 * 2 - t104
 
-  t120 = t134 * 2 - t105;
+  t120 = t134 * 2 - t105
 
-  /* 14 */ hi[1][slot] = t120;
+  /* 14 */ hi[1][slot] = t120
 
-  t135 = (t118 - t119) * costab16 * 2 - t120;
+  t135 = (t118 - t119) * costab16 * 2 - t120
 
-  /* 18 */ lo[2][slot] = t135;
+  /* 18 */ lo[2][slot] = t135
 
-  t169 = (t132 - t133) * costab16 * 2 - t134;
+  t169 = (t132 - t133) * costab16 * 2 - t134
 
-  t151 = t169 * 2 - t135;
+  t151 = t169 * 2 - t135
 
-  /* 22 */ lo[6][slot] = t151;
+  /* 22 */ lo[6][slot] = t151
 
-  t170 = ((t148 - t149) * costab16 * 2 - t150) * 2 - t151;
+  t170 = ((t148 - t149) * costab16 * 2 - t150) * 2 - t151
 
-  /* 26 */ lo[10][slot] = t170;
+  /* 26 */ lo[10][slot] = t170
   /* 30 */ lo[14][slot] =
-    (((t166 - t167) * costab16 * 2 - t168) * 2 - t169) * 2 - t170;
+    (((t166 - t167) * costab16 * 2 - t168) * 2 - t169) * 2 - t170
 
-  t171 = (t106 - t107) * costab8;
-  t172 = (t108 - t109) * costab24;
-  t173 = t171 + t172;
+  t171 = (t106 - t107) * costab8
+  t172 = (t108 - t109) * costab24
+  t173 = t171 + t172
 
-  t138 = t173 * 2 - t110;
-  t123 = t138 * 2 - t111;
-  t139 = (t121 - t122) * costab16 * 2 - t123;
-  t117 = t123 * 2 - t112;
+  t138 = t173 * 2 - t110
+  t123 = t138 * 2 - t111
+  t139 = (t121 - t122) * costab16 * 2 - t123
+  t117 = t123 * 2 - t112
 
-  /* 15 */ hi[0][slot] = t117;
+  /* 15 */ hi[0][slot] = t117
 
-  t124 = (t115 - t116) * costab16 * 2 - t117;
+  t124 = (t115 - t116) * costab16 * 2 - t117
 
-  /* 17 */ lo[1][slot] = t124;
+  /* 17 */ lo[1][slot] = t124
 
-  t131 = t139 * 2 - t124;
+  t131 = t139 * 2 - t124
 
-  /* 19 */ lo[3][slot] = t131;
+  /* 19 */ lo[3][slot] = t131
 
-  t140 = t164 * 2 - t131;
+  t140 = t164 * 2 - t131
 
-  /* 21 */ lo[5][slot] = t140;
+  /* 21 */ lo[5][slot] = t140
 
-  t174 = (t136 - t137) * costab16 * 2 - t138;
-  t155 = t174 * 2 - t139;
-  t147 = t155 * 2 - t140;
+  t174 = (t136 - t137) * costab16 * 2 - t138
+  t155 = t174 * 2 - t139
+  t147 = t155 * 2 - t140
 
-  /* 23 */ lo[7][slot] = t147;
+  /* 23 */ lo[7][slot] = t147
 
-  t156 = ((t144 - t145) * costab16 * 2 - t146) * 2 - t147;
+  t156 = ((t144 - t145) * costab16 * 2 - t146) * 2 - t147
 
-  /* 25 */ lo[9][slot] = t156;
+  /* 25 */ lo[9][slot] = t156
 
-  t175 = ((t152 - t153) * costab16 * 2 - t154) * 2 - t155;
-  t165 = t175 * 2 - t156;
+  t175 = ((t152 - t153) * costab16 * 2 - t154) * 2 - t155
+  t165 = t175 * 2 - t156
 
-  /* 27 */ lo[11][slot] = t165;
+  /* 27 */ lo[11][slot] = t165
 
-  t176 = (((t161 - t162) * costab16 * 2 - t163) * 2 - t164) * 2 - t165;
+  t176 = (((t161 - t162) * costab16 * 2 - t163) * 2 - t164) * 2 - t165
 
-  /* 29 */ lo[13][slot] = t176;
+  /* 29 */ lo[13][slot] = t176
   /* 31 */ lo[15][slot] =
-    ((((t171 - t172) * costab16 * 2 - t173) * 2 - t174) * 2 - t175) * 2 - t176;
+    ((((t171 - t172) * costab16 * 2 - t173) * 2 - t174) * 2 - t175) * 2 - t176
 
   /*
    * Totals:
@@ -554,7 +554,7 @@ MP3Synth.dct32 = (_in, slot, lo, hi) => {
    * 119 subtractions
    *  49 shifts (not counting SSO)
    */
-};
+}
 
 /*
  * These are the coefficients for the subband synthesis window. This is a
@@ -1172,6 +1172,6 @@ const D = [
     0.001586914,
     0.000076294
   ]
-];
+]
 
-module.exports = MP3Synth;
+module.exports = MP3Synth

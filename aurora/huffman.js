@@ -12,8 +12,8 @@ const PTR = (offs, bits) => {
       bits: bits,
       offset: offs
     }
-  };
-};
+  }
+}
 
 const huffquad_V = (v, w, x, y, hlen) => {
   return {
@@ -25,8 +25,8 @@ const huffquad_V = (v, w, x, y, hlen) => {
       y: y,
       hlen: hlen
     }
-  };
-};
+  }
+}
 
 const hufftabA = [
   /* 0000 */ PTR(16, 2),
@@ -65,7 +65,7 @@ const hufftabA = [
   /* 0011 ... */
   /* 0    */ huffquad_V(1, 0, 1, 0, 1) /* 26 */,
   /* 1    */ huffquad_V(1, 1, 0, 0, 1)
-];
+]
 
 const hufftabB = [
   /* 0000 */ huffquad_V(1, 1, 1, 1, 4),
@@ -84,7 +84,7 @@ const hufftabB = [
   /* 1101 */ huffquad_V(0, 0, 1, 0, 4),
   /* 1110 */ huffquad_V(0, 0, 0, 1, 4),
   /* 1111 */ huffquad_V(0, 0, 0, 0, 4)
-];
+]
 
 const V = (x, y, hlen) => {
   return {
@@ -94,10 +94,10 @@ const V = (x, y, hlen) => {
       y: y,
       hlen: hlen
     }
-  };
-};
+  }
+}
 
-const hufftab0 = [/*      */ V(0, 0, 0)];
+const hufftab0 = [/*      */ V(0, 0, 0)]
 
 const hufftab1 = [
   /* 000  */ V(1, 1, 3),
@@ -108,7 +108,7 @@ const hufftab1 = [
   /* 101  */ V(0, 0, 1),
   /* 110  */ V(0, 0, 1),
   /* 111  */ V(0, 0, 1)
-];
+]
 
 const hufftab2 = [
   /* 000  */ PTR(8, 3),
@@ -129,7 +129,7 @@ const hufftab2 = [
   /* 101  */ V(2, 1, 2),
   /* 110  */ V(2, 0, 2),
   /* 111  */ V(2, 0, 2)
-];
+]
 
 const hufftab3 = [
   /* 000  */ PTR(8, 3),
@@ -150,7 +150,7 @@ const hufftab3 = [
   /* 101  */ V(2, 1, 2),
   /* 110  */ V(2, 0, 2),
   /* 111  */ V(2, 0, 2)
-];
+]
 
 const hufftab5 = [
   /* 000  */ PTR(8, 4),
@@ -183,7 +183,7 @@ const hufftab5 = [
   /* 000 0000 ... */
   /* 0    */ V(3, 3, 1) /* 24 */,
   /* 1    */ V(2, 3, 1)
-];
+]
 
 const hufftab6 = [
   /* 0000 */ PTR(16, 3),
@@ -220,7 +220,7 @@ const hufftab6 = [
   /* 0010 ... */
   /* 0    */ V(2, 2, 1) /* 26 */,
   /* 1    */ V(0, 2, 1)
-];
+]
 
 const hufftab7 = [
   /* 0000 */ PTR(16, 4),
@@ -303,7 +303,7 @@ const hufftab7 = [
   /* 0000 0111 ... */
   /* 0    */ V(4, 3, 1) /* 62 */,
   /* 1    */ V(3, 3, 1)
-];
+]
 
 const hufftab8 = [
   /* 0000 */ PTR(16, 4),
@@ -386,7 +386,7 @@ const hufftab8 = [
   /* 0000 0110 ... */
   /* 0    */ V(5, 0, 1) /* 64 */,
   /* 1    */ V(3, 3, 1)
-];
+]
 
 const hufftab9 = [
   /* 0000 */ PTR(16, 4),
@@ -457,7 +457,7 @@ const hufftab9 = [
   /* 0000 0011 ... */
   /* 0    */ V(5, 4, 1) /* 52 */,
   /* 1    */ V(0, 5, 1)
-];
+]
 
 const hufftab10 = [
   /* 0000 */ PTR(16, 4),
@@ -594,7 +594,7 @@ const hufftab10 = [
   /* 0001 0001 ... */
   /* 0    */ V(3, 3, 1) /* 100 */,
   /* 1    */ V(0, 4, 1)
-];
+]
 
 const hufftab11 = [
   /* 0000 */ PTR(16, 4),
@@ -729,7 +729,7 @@ const hufftab11 = [
   /* 0001 1101 ... */
   /* 0    */ V(4, 3, 1) /* 102 */,
   /* 1    */ V(3, 3, 1)
-];
+]
 
 const hufftab12 = [
   /* 0000 */ PTR(16, 4),
@@ -856,7 +856,7 @@ const hufftab12 = [
   /* 0001 0011 ... */
   /* 0    */ V(0, 6, 1) /* 94 */,
   /* 1    */ V(0, 5, 1)
-];
+]
 
 const hufftab13 = [
   /* 0000 */ PTR(16, 4),
@@ -1381,7 +1381,7 @@ const hufftab13 = [
   /* 0000 0000 0000 1011 ... */
   /* 0    */ V(10, 15, 1) /* 396 */,
   /* 1    */ V(14, 9, 1)
-];
+]
 
 const hufftab15 = [
   /* 0000 */ PTR(16, 4),
@@ -1888,7 +1888,7 @@ const hufftab15 = [
   /* 0000 0001 1111 ... */
   /* 0    */ V(10, 14, 1) /* 378 */,
   /* 1    */ V(0, 15, 1)
-];
+]
 
 const hufftab16 = [
   /* 0000 */ PTR(16, 4),
@@ -2421,7 +2421,7 @@ const hufftab16 = [
   /* 0000 0110 1100 0001 ... */
   /* 0    */ V(14, 12, 1) /* 400 */,
   /* 1    */ V(13, 13, 1)
-];
+]
 
 const hufftab24 = [
   /* 0000 */ PTR(16, 4),
@@ -2936,17 +2936,17 @@ const hufftab24 = [
   /* 1000 0011 ... */
   /* 0    */ V(0, 5, 1) /* 384 */,
   /* 1    */ V(5, 0, 1)
-];
+]
 
 /* hufftable constructor */
 function MP3Hufftable(table, linbits, startbits) {
-  this.table = table;
-  this.linbits = linbits;
-  this.startbits = startbits;
+  this.table = table
+  this.linbits = linbits
+  this.startbits = startbits
 }
 
 /* external tables */
-exports.huff_quad_table = [hufftabA, hufftabB];
+exports.huff_quad_table = [hufftabA, hufftabB]
 exports.huff_pair_table = [
   /*  0 */ new MP3Hufftable(hufftab0, 0, 0),
   /*  1 */ new MP3Hufftable(hufftab1, 0, 3),
@@ -2980,4 +2980,4 @@ exports.huff_pair_table = [
   /* 29 */ new MP3Hufftable(hufftab24, 9, 4),
   /* 30 */ new MP3Hufftable(hufftab24, 11, 4),
   /* 31 */ new MP3Hufftable(hufftab24, 13, 4)
-];
+]

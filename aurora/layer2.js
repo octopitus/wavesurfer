@@ -1,30 +1,30 @@
-const tables = require("./tables");
-const MP3FrameHeader = require("./header");
-const MP3Frame = require("./frame");
-const utils = require("./utils");
+const tables = require('./tables')
+const MP3FrameHeader = require('./header')
+const MP3Frame = require('./frame')
+const utils = require('./utils')
 
 class Layer2 {
   constructor() {
-    this.samples = new Float64Array(3);
-    this.allocation = utils.makeArray([2, 32], Uint8Array);
-    this.scfsi = utils.makeArray([2, 32], Uint8Array);
-    this.scalefactor = utils.makeArray([2, 32, 3], Uint8Array);
+    this.samples = new Float64Array(3)
+    this.allocation = utils.makeArray([2, 32], Uint8Array)
+    this.scfsi = utils.makeArray([2, 32], Uint8Array)
+    this.scalefactor = utils.makeArray([2, 32, 3], Uint8Array)
   }
 
   decode(stream, frame) {
-    const header = frame.header;
-    const nch = header.nchannels();
-    let index;
+    const header = frame.header
+    const nch = header.nchannels()
+    let index
 
     if (header.flags & MP3FrameHeader.FLAGS.LSF_EXT) {
-      index = 4;
+      index = 4
     } else if (header.flags & MP3FrameHeader.FLAGS.FREEFORMAT) {
-      index = header.samplerate === 48000 ? 0 : 1;
+      index = header.samplerate === 48000 ? 0 : 1
     } else {
-      let bitrate_per_channel = header.bitrate;
+      let bitrate_per_channel = header.bitrate
 
       if (nch === 2) {
-        bitrate_per_channel /= 2;
+        bitrate_per_channel /= 2
 
         /*
          * ISO/IEC 11172-3 allows only single channel mode for 32, 48, 56, and
@@ -37,54 +37,54 @@ class Layer2 {
          * 320, or 384 kbps bitrates in Layer II.
          */
         if (bitrate_per_channel > 192000) {
-          throw new Error("bad bitrate/mode combination");
+          throw new Error('bad bitrate/mode combination')
         }
       }
 
       if (bitrate_per_channel <= 48000) {
-        index = header.samplerate === 32000 ? 3 : 2;
+        index = header.samplerate === 32000 ? 3 : 2
       } else if (bitrate_per_channel <= 80000) {
-        index = 0;
+        index = 0
       } else {
-        index = header.samplerate === 48000 ? 0 : 1;
+        index = header.samplerate === 48000 ? 0 : 1
       }
     }
 
-    const sblimit = SBQUANT[index].sblimit;
-    const offsets = SBQUANT[index].offsets;
+    const sblimit = SBQUANT[index].sblimit
+    const offsets = SBQUANT[index].offsets
 
-    let bound = 32;
+    let bound = 32
     if (header.mode === MP3FrameHeader.MODE.JOINT_STEREO) {
-      header.flags |= MP3FrameHeader.FLAGS.I_STEREO;
-      bound = 4 + header.mode_extension * 4;
+      header.flags |= MP3FrameHeader.FLAGS.I_STEREO
+      bound = 4 + header.mode_extension * 4
     }
 
     if (bound > sblimit) {
-      bound = sblimit;
+      bound = sblimit
     }
 
     // decode bit allocations
-    const allocation = this.allocation;
+    const allocation = this.allocation
     for (var sb = 0; sb < bound; sb++) {
-      var nbal = BITALLOC[offsets[sb]].nbal;
+      var nbal = BITALLOC[offsets[sb]].nbal
 
       for (var ch = 0; ch < nch; ch++) {
-        allocation[ch][sb] = stream.read(nbal);
+        allocation[ch][sb] = stream.read(nbal)
       }
     }
 
     for (var sb = bound; sb < sblimit; sb++) {
-      var nbal = BITALLOC[offsets[sb]].nbal;
+      var nbal = BITALLOC[offsets[sb]].nbal
 
-      allocation[0][sb] = allocation[1][sb] = stream.read(nbal);
+      allocation[0][sb] = allocation[1][sb] = stream.read(nbal)
     }
 
     // decode scalefactor selection info
-    const scfsi = this.scfsi;
+    const scfsi = this.scfsi
     for (var sb = 0; sb < sblimit; sb++) {
       for (var ch = 0; ch < nch; ch++) {
         if (allocation[ch][sb]) {
-          scfsi[ch][sb] = stream.read(2);
+          scfsi[ch][sb] = stream.read(2)
         }
       }
     }
@@ -94,29 +94,29 @@ class Layer2 {
     }
 
     // decode scalefactors
-    const scalefactor = this.scalefactor;
+    const scalefactor = this.scalefactor
     for (var sb = 0; sb < sblimit; sb++) {
       for (var ch = 0; ch < nch; ch++) {
         if (allocation[ch][sb]) {
-          scalefactor[ch][sb][0] = stream.read(6);
+          scalefactor[ch][sb][0] = stream.read(6)
 
           switch (scfsi[ch][sb]) {
             case 2:
               scalefactor[ch][sb][2] = scalefactor[ch][sb][1] =
-                scalefactor[ch][sb][0];
-              break;
+                scalefactor[ch][sb][0]
+              break
 
             case 0:
-              scalefactor[ch][sb][1] = stream.read(6);
+              scalefactor[ch][sb][1] = stream.read(6)
             // fall through
 
             case 1:
             case 3:
-              scalefactor[ch][sb][2] = stream.read(6);
+              scalefactor[ch][sb][2] = stream.read(6)
           }
 
           if (scfsi[ch][sb] & 1) {
-            scalefactor[ch][sb][1] = scalefactor[ch][sb][scfsi[ch][sb] - 1];
+            scalefactor[ch][sb][1] = scalefactor[ch][sb][scfsi[ch][sb] - 1]
           }
 
           /*
@@ -134,16 +134,16 @@ class Layer2 {
       for (var sb = 0; sb < bound; sb++) {
         for (var ch = 0; ch < nch; ch++) {
           if ((index = allocation[ch][sb])) {
-            index = OFFSETS[BITALLOC[offsets[sb]].offset][index - 1];
-            this.decodeSamples(stream, QC_TABLE[index]);
+            index = OFFSETS[BITALLOC[offsets[sb]].offset][index - 1]
+            this.decodeSamples(stream, QC_TABLE[index])
 
-            var scale = tables.SF_TABLE[scalefactor[ch][sb][gr >> 2]];
+            var scale = tables.SF_TABLE[scalefactor[ch][sb][gr >> 2]]
             for (var s = 0; s < 3; s++) {
-              frame.sbsample[ch][3 * gr + s][sb] = this.samples[s] * scale;
+              frame.sbsample[ch][3 * gr + s][sb] = this.samples[s] * scale
             }
           } else {
             for (var s = 0; s < 3; s++) {
-              frame.sbsample[ch][3 * gr + s][sb] = 0;
+              frame.sbsample[ch][3 * gr + s][sb] = 0
             }
           }
         }
@@ -152,19 +152,19 @@ class Layer2 {
       // joint stereo
       for (var sb = bound; sb < sblimit; sb++) {
         if ((index = allocation[0][sb])) {
-          index = OFFSETS[BITALLOC[offsets[sb]].offset][index - 1];
-          this.decodeSamples(stream, QC_TABLE[index]);
+          index = OFFSETS[BITALLOC[offsets[sb]].offset][index - 1]
+          this.decodeSamples(stream, QC_TABLE[index])
 
           for (var ch = 0; ch < nch; ch++) {
-            var scale = tables.SF_TABLE[scalefactor[ch][sb][gr >> 2]];
+            var scale = tables.SF_TABLE[scalefactor[ch][sb][gr >> 2]]
             for (var s = 0; s < 3; s++) {
-              frame.sbsample[ch][3 * gr + s][sb] = this.samples[s] * scale;
+              frame.sbsample[ch][3 * gr + s][sb] = this.samples[s] * scale
             }
           }
         } else {
           for (var ch = 0; ch < nch; ch++) {
             for (var s = 0; s < 3; s++) {
-              frame.sbsample[ch][3 * gr + s][sb] = 0;
+              frame.sbsample[ch][3 * gr + s][sb] = 0
             }
           }
         }
@@ -174,7 +174,7 @@ class Layer2 {
       for (var ch = 0; ch < nch; ch++) {
         for (var s = 0; s < 3; s++) {
           for (var sb = sblimit; sb < 32; sb++) {
-            frame.sbsample[ch][3 * gr + s][sb] = 0;
+            frame.sbsample[ch][3 * gr + s][sb] = 0
           }
         }
       }
@@ -182,38 +182,38 @@ class Layer2 {
   }
 
   decodeSamples(stream, quantclass) {
-    const sample = this.samples;
-    let nb = quantclass.group;
+    const sample = this.samples
+    let nb = quantclass.group
 
     if (nb) {
       // degrouping
-      let c = stream.read(quantclass.bits);
-      const nlevels = quantclass.nlevels;
+      let c = stream.read(quantclass.bits)
+      const nlevels = quantclass.nlevels
 
       for (var s = 0; s < 3; s++) {
-        sample[s] = c % nlevels;
-        c = (c / nlevels) | 0;
+        sample[s] = c % nlevels
+        c = (c / nlevels) | 0
       }
     } else {
-      nb = quantclass.bits;
+      nb = quantclass.bits
       for (var s = 0; s < 3; s++) {
-        sample[s] = stream.read(nb);
+        sample[s] = stream.read(nb)
       }
     }
 
     for (var s = 0; s < 3; s++) {
       // invert most significant bit, and form a 2's complement sample
-      let requantized = sample[s] ^ (1 << (nb - 1));
-      requantized |= -(requantized & (1 << (nb - 1)));
-      requantized /= 1 << (nb - 1);
+      let requantized = sample[s] ^ (1 << (nb - 1))
+      requantized |= -(requantized & (1 << (nb - 1)))
+      requantized /= 1 << (nb - 1)
 
       // requantize the sample
-      sample[s] = (requantized + quantclass.D) * quantclass.C;
+      sample[s] = (requantized + quantclass.D) * quantclass.C
     }
   }
 }
 
-MP3Frame.layers[2] = Layer2;
+MP3Frame.layers[2] = Layer2
 
 // possible quantization per subband table
 const SBQUANT = [
@@ -289,10 +289,10 @@ const SBQUANT = [
   },
 
   // ISO/IEC 11172-3 Table B.2c
-  { sblimit: 8, offsets: [5, 5, 2, 2, 2, 2, 2, 2] },
+  {sblimit: 8, offsets: [5, 5, 2, 2, 2, 2, 2, 2]},
 
   // ISO/IEC 11172-3 Table B.2d
-  { sblimit: 12, offsets: [5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] },
+  {sblimit: 12, offsets: [5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]},
 
   // ISO/IEC 13818-3 Table B.1
   {
@@ -330,19 +330,19 @@ const SBQUANT = [
       1
     ]
   }
-];
+]
 
 // bit allocation table
 const BITALLOC = [
-  { nbal: 2, offset: 0 }, // 0
-  { nbal: 2, offset: 3 }, // 1
-  { nbal: 3, offset: 3 }, // 2
-  { nbal: 3, offset: 1 }, // 3
-  { nbal: 4, offset: 2 }, // 4
-  { nbal: 4, offset: 3 }, // 5
-  { nbal: 4, offset: 4 }, // 6
-  { nbal: 4, offset: 5 } // 7
-];
+  {nbal: 2, offset: 0}, // 0
+  {nbal: 2, offset: 3}, // 1
+  {nbal: 3, offset: 3}, // 2
+  {nbal: 3, offset: 1}, // 3
+  {nbal: 4, offset: 2}, // 4
+  {nbal: 4, offset: 3}, // 5
+  {nbal: 4, offset: 4}, // 6
+  {nbal: 4, offset: 5} // 7
+]
 
 // offsets into quantization class table
 const OFFSETS = [
@@ -352,30 +352,30 @@ const OFFSETS = [
   [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], // 3
   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16], // 4
   [0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] // 5
-];
+]
 
 /*
  * These are the Layer II classes of quantization.
  * The table is derived from Table B.4 of ISO/IEC 11172-3.
  */
 const QC_TABLE = [
-  { nlevels: 3, group: 2, bits: 5, C: 1.33333333333, D: 0.5 },
-  { nlevels: 5, group: 3, bits: 7, C: 1.6, D: 0.5 },
-  { nlevels: 7, group: 0, bits: 3, C: 1.14285714286, D: 0.25 },
-  { nlevels: 9, group: 4, bits: 10, C: 1.77777777777, D: 0.5 },
-  { nlevels: 15, group: 0, bits: 4, C: 1.06666666666, D: 0.125 },
-  { nlevels: 31, group: 0, bits: 5, C: 1.03225806452, D: 0.0625 },
-  { nlevels: 63, group: 0, bits: 6, C: 1.01587301587, D: 0.03125 },
-  { nlevels: 127, group: 0, bits: 7, C: 1.00787401575, D: 0.015625 },
-  { nlevels: 255, group: 0, bits: 8, C: 1.00392156863, D: 0.0078125 },
-  { nlevels: 511, group: 0, bits: 9, C: 1.00195694716, D: 0.00390625 },
-  { nlevels: 1023, group: 0, bits: 10, C: 1.00097751711, D: 0.001953125 },
-  { nlevels: 2047, group: 0, bits: 11, C: 1.00048851979, D: 0.0009765625 },
-  { nlevels: 4095, group: 0, bits: 12, C: 1.00024420024, D: 0.00048828125 },
-  { nlevels: 8191, group: 0, bits: 13, C: 1.00012208522, D: 0.00024414063 },
-  { nlevels: 16383, group: 0, bits: 14, C: 1.00006103888, D: 0.00012207031 },
-  { nlevels: 32767, group: 0, bits: 15, C: 1.00003051851, D: 0.00006103516 },
-  { nlevels: 65535, group: 0, bits: 16, C: 1.00001525902, D: 0.00003051758 }
-];
+  {nlevels: 3, group: 2, bits: 5, C: 1.33333333333, D: 0.5},
+  {nlevels: 5, group: 3, bits: 7, C: 1.6, D: 0.5},
+  {nlevels: 7, group: 0, bits: 3, C: 1.14285714286, D: 0.25},
+  {nlevels: 9, group: 4, bits: 10, C: 1.77777777777, D: 0.5},
+  {nlevels: 15, group: 0, bits: 4, C: 1.06666666666, D: 0.125},
+  {nlevels: 31, group: 0, bits: 5, C: 1.03225806452, D: 0.0625},
+  {nlevels: 63, group: 0, bits: 6, C: 1.01587301587, D: 0.03125},
+  {nlevels: 127, group: 0, bits: 7, C: 1.00787401575, D: 0.015625},
+  {nlevels: 255, group: 0, bits: 8, C: 1.00392156863, D: 0.0078125},
+  {nlevels: 511, group: 0, bits: 9, C: 1.00195694716, D: 0.00390625},
+  {nlevels: 1023, group: 0, bits: 10, C: 1.00097751711, D: 0.001953125},
+  {nlevels: 2047, group: 0, bits: 11, C: 1.00048851979, D: 0.0009765625},
+  {nlevels: 4095, group: 0, bits: 12, C: 1.00024420024, D: 0.00048828125},
+  {nlevels: 8191, group: 0, bits: 13, C: 1.00012208522, D: 0.00024414063},
+  {nlevels: 16383, group: 0, bits: 14, C: 1.00006103888, D: 0.00012207031},
+  {nlevels: 32767, group: 0, bits: 15, C: 1.00003051851, D: 0.00006103516},
+  {nlevels: 65535, group: 0, bits: 16, C: 1.00001525902, D: 0.00003051758}
+]
 
-module.exports = Layer2;
+module.exports = Layer2

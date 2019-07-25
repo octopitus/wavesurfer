@@ -1,35 +1,35 @@
-const AV = require("./aurora");
+const AV = require('./aurora')
 
 class MP3FrameHeader {
   constructor() {
-    this.layer = 0; // audio layer (1, 2, or 3)
-    this.mode = 0; // channel mode (see above)
-    this.mode_extension = 0; // additional mode info
-    this.emphasis = 0; // de-emphasis to use (see above)
+    this.layer = 0 // audio layer (1, 2, or 3)
+    this.mode = 0 // channel mode (see above)
+    this.mode_extension = 0 // additional mode info
+    this.emphasis = 0 // de-emphasis to use (see above)
 
-    this.bitrate = 0; // stream bitrate (bps)
-    this.samplerate = 0; // sampling frequency (Hz)
+    this.bitrate = 0 // stream bitrate (bps)
+    this.samplerate = 0 // sampling frequency (Hz)
 
-    this.crc_check = 0; // frame CRC accumulator
-    this.crc_target = 0; // final target CRC checksum
+    this.crc_check = 0 // frame CRC accumulator
+    this.crc_target = 0 // final target CRC checksum
 
-    this.flags = 0; // flags (see above)
-    this.private_bits = 0; // private bits
+    this.flags = 0 // flags (see above)
+    this.private_bits = 0 // private bits
   }
 
   copy() {
-    const clone = new MP3FrameHeader();
-    const keys = Object.keys(this);
+    const clone = new MP3FrameHeader()
+    const keys = Object.keys(this)
 
     for (const key in keys) {
-      clone[key] = this[key];
+      clone[key] = this[key]
     }
 
-    return clone;
+    return clone
   }
 
   nchannels() {
-    return this.mode === 0 ? 1 : 2;
+    return this.mode === 0 ? 1 : 2
   }
 
   nbsamples() {
@@ -37,123 +37,123 @@ class MP3FrameHeader {
       ? 12
       : this.layer === 3 && this.flags & MP3FrameHeader.FLAGS.LSF_EXT
       ? 18
-      : 36;
+      : 36
   }
 
   framesize() {
     if (this.bitrate === 0) {
-      return null;
+      return null
     }
 
-    const padding = this.flags & MP3FrameHeader.FLAGS.PADDING ? 1 : 0;
+    const padding = this.flags & MP3FrameHeader.FLAGS.PADDING ? 1 : 0
     switch (this.layer) {
       case 1:
-        var size = ((this.bitrate * 12) / this.samplerate) | 0;
-        return (size + padding) * 4;
+        var size = ((this.bitrate * 12) / this.samplerate) | 0
+        return (size + padding) * 4
 
       case 2:
-        var size = ((this.bitrate * 144) / this.samplerate) | 0;
-        return size + padding;
+        var size = ((this.bitrate * 144) / this.samplerate) | 0
+        return size + padding
 
       case 3:
       default:
-        const lsf = this.flags & MP3FrameHeader.FLAGS.LSF_EXT ? 1 : 0;
-        var size = ((this.bitrate * 144) / (this.samplerate << lsf)) | 0;
-        return size + padding;
+        const lsf = this.flags & MP3FrameHeader.FLAGS.LSF_EXT ? 1 : 0
+        var size = ((this.bitrate * 144) / (this.samplerate << lsf)) | 0
+        return size + padding
     }
   }
 
   decode(stream) {
-    this.flags = 0;
-    this.private_bits = 0;
+    this.flags = 0
+    this.private_bits = 0
 
     // syncword
-    stream.advance(11);
+    stream.advance(11)
 
     // MPEG 2.5 indicator (really part of syncword)
     if (stream.read(1) === 0) {
-      this.flags |= MP3FrameHeader.FLAGS.MPEG_2_5_EXT;
+      this.flags |= MP3FrameHeader.FLAGS.MPEG_2_5_EXT
     }
 
     // ID
     if (stream.read(1) === 0) {
-      this.flags |= MP3FrameHeader.FLAGS.LSF_EXT;
+      this.flags |= MP3FrameHeader.FLAGS.LSF_EXT
     } else if (this.flags & MP3FrameHeader.FLAGS.MPEG_2_5_EXT) {
-      throw new AV.UnderflowError(); // LOSTSYNC
+      throw new AV.UnderflowError() // LOSTSYNC
     }
 
     // layer
-    this.layer = 4 - stream.read(2);
+    this.layer = 4 - stream.read(2)
 
     if (this.layer === 4) {
-      throw new Error("Invalid layer");
+      throw new Error('Invalid layer')
     }
 
     // protection_bit
     if (stream.read(1) === 0) {
-      this.flags |= MP3FrameHeader.FLAGS.PROTECTION;
+      this.flags |= MP3FrameHeader.FLAGS.PROTECTION
     }
 
     // bitrate_index
-    let index = stream.read(4);
+    let index = stream.read(4)
     if (index === 15) {
-      throw new Error("Invalid bitrate");
+      throw new Error('Invalid bitrate')
     }
 
     if (this.flags & MP3FrameHeader.FLAGS.LSF_EXT) {
-      this.bitrate = BITRATES[3 + (this.layer >> 1)][index];
+      this.bitrate = BITRATES[3 + (this.layer >> 1)][index]
     } else {
-      this.bitrate = BITRATES[this.layer - 1][index];
+      this.bitrate = BITRATES[this.layer - 1][index]
     }
 
     // sampling_frequency
-    index = stream.read(2);
+    index = stream.read(2)
     if (index === 3) {
-      throw new Error("Invalid sampling frequency");
+      throw new Error('Invalid sampling frequency')
     }
 
-    this.samplerate = SAMPLERATES[index];
+    this.samplerate = SAMPLERATES[index]
 
     if (this.flags & MP3FrameHeader.FLAGS.LSF_EXT) {
-      this.samplerate /= 2;
+      this.samplerate /= 2
 
       if (this.flags & MP3FrameHeader.FLAGS.MPEG_2_5_EXT) {
-        this.samplerate /= 2;
+        this.samplerate /= 2
       }
     }
 
     // padding_bit
     if (stream.read(1)) {
-      this.flags |= MP3FrameHeader.FLAGS.PADDING;
+      this.flags |= MP3FrameHeader.FLAGS.PADDING
     }
 
     // private_bit
     if (stream.read(1)) {
-      this.private_bits |= PRIVATE.HEADER;
+      this.private_bits |= PRIVATE.HEADER
     }
 
     // mode
-    this.mode = 3 - stream.read(2);
+    this.mode = 3 - stream.read(2)
 
     // mode_extension
-    this.mode_extension = stream.read(2);
+    this.mode_extension = stream.read(2)
 
     // copyright
     if (stream.read(1)) {
-      this.flags |= MP3FrameHeader.FLAGS.COPYRIGHT;
+      this.flags |= MP3FrameHeader.FLAGS.COPYRIGHT
     }
 
     // original/copy
     if (stream.read(1)) {
-      this.flags |= MP3FrameHeader.FLAGS.ORIGINAL;
+      this.flags |= MP3FrameHeader.FLAGS.ORIGINAL
     }
 
     // emphasis
-    this.emphasis = stream.read(2);
+    this.emphasis = stream.read(2)
 
     // crc_check
     if (this.flags & MP3FrameHeader.FLAGS.PROTECTION) {
-      this.crc_target = stream.read(16);
+      this.crc_target = stream.read(16)
     }
   }
 }
@@ -247,9 +247,9 @@ const BITRATES = [
     144000,
     160000
   ] // II & III
-];
+]
 
-const SAMPLERATES = [44100, 48000, 32000];
+const SAMPLERATES = [44100, 48000, 32000]
 
 MP3FrameHeader.FLAGS = {
   NPRIVATE_III: 0x0007, // number of Layer III private bits
@@ -267,68 +267,68 @@ MP3FrameHeader.FLAGS = {
   LSF_EXT: 0x1000, // lower sampling freq. extension
   MC_EXT: 0x2000, // multichannel audio extension
   MPEG_2_5_EXT: 0x4000 // MPEG 2.5 (unofficial) extension
-};
+}
 
 const PRIVATE = {
   HEADER: 0x0100, // header private bit
   III: 0x001f // Layer III private bits (up to 5)
-};
+}
 
 MP3FrameHeader.MODE = {
   SINGLE_CHANNEL: 0, // single channel
   DUAL_CHANNEL: 1, // dual channel
   JOINT_STEREO: 2, // joint (MS/intensity) stereo
   STEREO: 3 // normal LR stereo
-};
+}
 
 const EMPHASIS = {
   NONE: 0, // no emphasis
   _50_15_US: 1, // 50/15 microseconds emphasis
   CCITT_J_17: 3, // CCITT J.17 emphasis
   RESERVED: 2 // unknown emphasis
-};
+}
 
-MP3FrameHeader.BUFFER_GUARD = 8;
-MP3FrameHeader.BUFFER_MDLEN = 511 + 2048 + MP3FrameHeader.BUFFER_GUARD;
+MP3FrameHeader.BUFFER_GUARD = 8
+MP3FrameHeader.BUFFER_MDLEN = 511 + 2048 + MP3FrameHeader.BUFFER_GUARD
 
 MP3FrameHeader.decode = stream => {
   // synchronize
-  let ptr = stream.next_frame;
-  let syncing = true;
-  let header = null;
+  let ptr = stream.next_frame
+  let syncing = true
+  let header = null
 
   while (syncing) {
-    syncing = false;
+    syncing = false
 
     if (stream.sync) {
       if (!stream.available(MP3FrameHeader.BUFFER_GUARD)) {
-        stream.next_frame = ptr;
-        throw new AV.UnderflowError();
+        stream.next_frame = ptr
+        throw new AV.UnderflowError()
       } else if (
         !(stream.getU8(ptr) === 0xff && (stream.getU8(ptr + 1) & 0xe0) === 0xe0)
       ) {
         // mark point where frame sync word was expected
-        stream.this_frame = ptr;
-        stream.next_frame = ptr + 1;
-        throw new AV.UnderflowError(); // LOSTSYNC
+        stream.this_frame = ptr
+        stream.next_frame = ptr + 1
+        throw new AV.UnderflowError() // LOSTSYNC
       }
     } else {
-      stream.seek(ptr * 8);
+      stream.seek(ptr * 8)
       if (!stream.doSync()) {
-        throw new AV.UnderflowError();
+        throw new AV.UnderflowError()
       }
 
-      ptr = stream.nextByte();
+      ptr = stream.nextByte()
     }
 
     // begin processing
-    stream.this_frame = ptr;
-    stream.next_frame = ptr + 1; // possibly bogus sync word
+    stream.this_frame = ptr
+    stream.next_frame = ptr + 1 // possibly bogus sync word
 
-    stream.seek(stream.this_frame * 8);
+    stream.seek(stream.this_frame * 8)
 
-    header = new MP3FrameHeader();
-    header.decode(stream);
+    header = new MP3FrameHeader()
+    header.decode(stream)
 
     if (header.bitrate === 0) {
       if (
@@ -336,103 +336,103 @@ MP3FrameHeader.decode = stream => {
         !stream.sync ||
         (header.layer === 3 && stream.freerate > 640000)
       ) {
-        MP3FrameHeader.free_bitrate(stream, header);
+        MP3FrameHeader.free_bitrate(stream, header)
       }
 
-      header.bitrate = stream.freerate;
-      header.flags |= MP3FrameHeader.FLAGS.FREEFORMAT;
+      header.bitrate = stream.freerate
+      header.flags |= MP3FrameHeader.FLAGS.FREEFORMAT
     }
 
     // calculate beginning of next frame
-    const pad_slot = header.flags & MP3FrameHeader.FLAGS.PADDING ? 1 : 0;
+    const pad_slot = header.flags & MP3FrameHeader.FLAGS.PADDING ? 1 : 0
 
     if (header.layer === 1) {
       var N =
-        ((((12 * header.bitrate) / header.samplerate) << 0) + pad_slot) * 4;
+        ((((12 * header.bitrate) / header.samplerate) << 0) + pad_slot) * 4
     } else {
       const slots_per_frame =
         header.layer === 3 && header.flags & MP3FrameHeader.FLAGS.LSF_EXT
           ? 72
-          : 144;
+          : 144
       var N =
         (((slots_per_frame * header.bitrate) / header.samplerate) << 0) +
-        pad_slot;
+        pad_slot
     }
 
     // verify there is enough data left in buffer to decode this frame
     if (!stream.available(N + MP3FrameHeader.BUFFER_GUARD)) {
-      stream.next_frame = stream.this_frame;
-      throw new AV.UnderflowError();
+      stream.next_frame = stream.this_frame
+      throw new AV.UnderflowError()
     }
 
-    stream.next_frame = stream.this_frame + N;
+    stream.next_frame = stream.this_frame + N
 
     if (!stream.sync) {
       // check that a valid frame header follows this frame
-      ptr = stream.next_frame;
+      ptr = stream.next_frame
 
       if (
         !(stream.getU8(ptr) === 0xff && (stream.getU8(ptr + 1) & 0xe0) === 0xe0)
       ) {
-        ptr = stream.next_frame = stream.this_frame + 1;
+        ptr = stream.next_frame = stream.this_frame + 1
 
         // emulating 'goto sync'
-        syncing = true;
-        continue;
+        syncing = true
+        continue
       }
 
-      stream.sync = true;
+      stream.sync = true
     }
   }
 
-  header.flags |= MP3FrameHeader.FLAGS.INCOMPLETE;
-  return header;
-};
+  header.flags |= MP3FrameHeader.FLAGS.INCOMPLETE
+  return header
+}
 
 MP3FrameHeader.free_bitrate = (stream, header) => {
   const pad_slot = header.flags & MP3FrameHeader.FLAGS.PADDING ? 1 : 0,
     slots_per_frame =
       header.layer === 3 && header.flags & MP3FrameHeader.FLAGS.LSF_EXT
         ? 72
-        : 144;
+        : 144
 
-  const start = stream.offset();
-  let rate = 0;
+  const start = stream.offset()
+  let rate = 0
 
   while (stream.doSync()) {
-    const peek_header = header.copy();
-    const peek_stream = stream.copy();
+    const peek_header = header.copy()
+    const peek_stream = stream.copy()
 
     if (
       peek_header.decode(peek_stream) &&
       peek_header.layer === header.layer &&
       peek_header.samplerate === header.samplerate
     ) {
-      const N = stream.nextByte() - stream.this_frame;
+      const N = stream.nextByte() - stream.this_frame
 
       if (header.layer === 1) {
-        rate = ((header.samplerate * (N - 4 * pad_slot + 4)) / 48 / 1000) | 0;
+        rate = ((header.samplerate * (N - 4 * pad_slot + 4)) / 48 / 1000) | 0
       } else {
         rate =
           ((header.samplerate * (N - pad_slot + 1)) / slots_per_frame / 1000) |
-          0;
+          0
       }
 
       if (rate >= 8) {
-        break;
+        break
       }
     }
 
-    stream.advance(8);
+    stream.advance(8)
   }
 
-  stream.seek(start);
+  stream.seek(start)
 
   if (rate < 8 || (header.layer === 3 && rate > 640)) {
-    throw new AV.UnderflowError();
+    throw new AV.UnderflowError()
   } // LOSTSYNC
 
-  stream.freerate = rate * 1000;
-};
+  stream.freerate = rate * 1000
+}
 
-module.exports = MP3FrameHeader;
+module.exports = MP3FrameHeader

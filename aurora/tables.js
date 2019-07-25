@@ -72,7 +72,7 @@ exports.SF_TABLE = new Float32Array([
   0.000001513864,
   0.000001201554,
   0.0
-]);
+])
 
 /*
  * MPEG-1 scalefactor band widths
@@ -101,7 +101,7 @@ const SFB_48000_LONG = new Uint8Array([
   54,
   54,
   192
-]);
+])
 
 const SFB_44100_LONG = new Uint8Array([
   4,
@@ -126,7 +126,7 @@ const SFB_44100_LONG = new Uint8Array([
   54,
   76,
   158
-]);
+])
 
 const SFB_32000_LONG = new Uint8Array([
   4,
@@ -151,7 +151,7 @@ const SFB_32000_LONG = new Uint8Array([
   84,
   102,
   26
-]);
+])
 
 const SFB_48000_SHORT = new Uint8Array([
   4,
@@ -193,7 +193,7 @@ const SFB_48000_SHORT = new Uint8Array([
   66,
   66,
   66
-]);
+])
 
 const SFB_44100_SHORT = new Uint8Array([
   4,
@@ -235,7 +235,7 @@ const SFB_44100_SHORT = new Uint8Array([
   56,
   56,
   56
-]);
+])
 
 const SFB_32000_SHORT = new Uint8Array([
   4,
@@ -277,7 +277,7 @@ const SFB_32000_SHORT = new Uint8Array([
   12,
   12,
   12
-]);
+])
 
 const SFB_48000_MIXED = new Uint8Array([
   /* long */ 4,
@@ -318,7 +318,7 @@ const SFB_48000_MIXED = new Uint8Array([
   66,
   66,
   66
-]);
+])
 
 const SFB_44100_MIXED = new Uint8Array([
   /* long */ 4,
@@ -359,7 +359,7 @@ const SFB_44100_MIXED = new Uint8Array([
   56,
   56,
   56
-]);
+])
 
 const SFB_32000_MIXED = new Uint8Array([
   /* long */ 4,
@@ -400,7 +400,7 @@ const SFB_32000_MIXED = new Uint8Array([
   12,
   12,
   12
-]);
+])
 
 /*
  * MPEG-2 scalefactor band widths
@@ -429,7 +429,7 @@ const SFB_24000_LONG = new Uint8Array([
   70,
   76,
   36
-]);
+])
 
 const SFB_22050_LONG = new Uint8Array([
   6,
@@ -454,9 +454,9 @@ const SFB_22050_LONG = new Uint8Array([
   68,
   58,
   54
-]);
+])
 
-const SFB_16000_LONG = SFB_22050_LONG;
+const SFB_16000_LONG = SFB_22050_LONG
 
 const SFB_24000_SHORT = new Uint8Array([
   4,
@@ -498,7 +498,7 @@ const SFB_24000_SHORT = new Uint8Array([
   12,
   12,
   12
-]);
+])
 
 const SFB_22050_SHORT = new Uint8Array([
   4,
@@ -540,7 +540,7 @@ const SFB_22050_SHORT = new Uint8Array([
   18,
   18,
   18
-]);
+])
 
 const SFB_16000_SHORT = new Uint8Array([
   4,
@@ -582,7 +582,7 @@ const SFB_16000_SHORT = new Uint8Array([
   18,
   18,
   18
-]);
+])
 
 const SFB_24000_MIXED = new Uint8Array([
   /* long */ 6,
@@ -621,7 +621,7 @@ const SFB_24000_MIXED = new Uint8Array([
   12,
   12,
   12
-]);
+])
 
 const SFB_22050_MIXED = new Uint8Array([
   /* long */ 6,
@@ -660,7 +660,7 @@ const SFB_22050_MIXED = new Uint8Array([
   18,
   18,
   18
-]);
+])
 
 const SFB_16000_MIXED = new Uint8Array([
   /* long */ 6,
@@ -699,14 +699,14 @@ const SFB_16000_MIXED = new Uint8Array([
   18,
   18,
   18
-]);
+])
 
 /*
  * MPEG 2.5 scalefactor band widths
  * derived from public sources
  */
-const SFB_12000_LONG = SFB_16000_LONG;
-const SFB_11025_LONG = SFB_12000_LONG;
+const SFB_12000_LONG = SFB_16000_LONG
+const SFB_11025_LONG = SFB_12000_LONG
 
 const SFB_8000_LONG = new Uint8Array([
   12,
@@ -731,10 +731,10 @@ const SFB_8000_LONG = new Uint8Array([
   2,
   2,
   2
-]);
+])
 
-const SFB_12000_SHORT = SFB_16000_SHORT;
-const SFB_11025_SHORT = SFB_12000_SHORT;
+const SFB_12000_SHORT = SFB_16000_SHORT
+const SFB_11025_SHORT = SFB_12000_SHORT
 
 const SFB_8000_SHORT = new Uint8Array([
   8,
@@ -776,10 +776,10 @@ const SFB_8000_SHORT = new Uint8Array([
   26,
   26,
   26
-]);
+])
 
-const SFB_12000_MIXED = SFB_16000_MIXED;
-const SFB_11025_MIXED = SFB_12000_MIXED;
+const SFB_12000_MIXED = SFB_16000_MIXED
+const SFB_11025_MIXED = SFB_12000_MIXED
 
 /* the 8000 Hz short block scalefactor bands do not break after
  the first 36 frequency lines, so this is probably wrong */
@@ -823,19 +823,19 @@ const SFB_8000_MIXED = new Uint8Array([
   26,
   26,
   26
-]);
+])
 
 exports.SFBWIDTH_TABLE = [
-  { l: SFB_48000_LONG, s: SFB_48000_SHORT, m: SFB_48000_MIXED },
-  { l: SFB_44100_LONG, s: SFB_44100_SHORT, m: SFB_44100_MIXED },
-  { l: SFB_32000_LONG, s: SFB_32000_SHORT, m: SFB_32000_MIXED },
-  { l: SFB_24000_LONG, s: SFB_24000_SHORT, m: SFB_24000_MIXED },
-  { l: SFB_22050_LONG, s: SFB_22050_SHORT, m: SFB_22050_MIXED },
-  { l: SFB_16000_LONG, s: SFB_16000_SHORT, m: SFB_16000_MIXED },
-  { l: SFB_12000_LONG, s: SFB_12000_SHORT, m: SFB_12000_MIXED },
-  { l: SFB_11025_LONG, s: SFB_11025_SHORT, m: SFB_11025_MIXED },
-  { l: SFB_8000_LONG, s: SFB_8000_SHORT, m: SFB_8000_MIXED }
-];
+  {l: SFB_48000_LONG, s: SFB_48000_SHORT, m: SFB_48000_MIXED},
+  {l: SFB_44100_LONG, s: SFB_44100_SHORT, m: SFB_44100_MIXED},
+  {l: SFB_32000_LONG, s: SFB_32000_SHORT, m: SFB_32000_MIXED},
+  {l: SFB_24000_LONG, s: SFB_24000_SHORT, m: SFB_24000_MIXED},
+  {l: SFB_22050_LONG, s: SFB_22050_SHORT, m: SFB_22050_MIXED},
+  {l: SFB_16000_LONG, s: SFB_16000_SHORT, m: SFB_16000_MIXED},
+  {l: SFB_12000_LONG, s: SFB_12000_SHORT, m: SFB_12000_MIXED},
+  {l: SFB_11025_LONG, s: SFB_11025_SHORT, m: SFB_11025_MIXED},
+  {l: SFB_8000_LONG, s: SFB_8000_SHORT, m: SFB_8000_MIXED}
+]
 
 exports.PRETAB = new Uint8Array([
   0,
@@ -860,7 +860,7 @@ exports.PRETAB = new Uint8Array([
   3,
   2,
   0
-]);
+])
 
 /*
  * fractional powers of two
@@ -876,7 +876,7 @@ exports.ROOT_TABLE = new Float32Array([
   /* 2^(+1/4) */ 1.18920711500272,
   /* 2^(+2/4) */ 1.4142135623731,
   /* 2^(+3/4) */ 1.68179283050743
-]);
+])
 
 exports.CS = new Float32Array([
   +0.857492926,
@@ -887,7 +887,7 @@ exports.CS = new Float32Array([
   +0.999160558,
   +0.999899195,
   +0.999993155
-]);
+])
 
 exports.CA = new Float32Array([
   -0.514495755,
@@ -898,15 +898,15 @@ exports.CA = new Float32Array([
   -0.040965583,
   -0.014198569,
   -0.003699975
-]);
+])
 
-exports.COUNT1TABLE_SELECT = 0x01;
-exports.SCALEFAC_SCALE = 0x02;
-exports.PREFLAG = 0x04;
-exports.MIXED_BLOCK_FLAG = 0x08;
+exports.COUNT1TABLE_SELECT = 0x01
+exports.SCALEFAC_SCALE = 0x02
+exports.PREFLAG = 0x04
+exports.MIXED_BLOCK_FLAG = 0x08
 
-exports.I_STEREO = 0x1;
-exports.MS_STEREO = 0x2;
+exports.I_STEREO = 0x1
+exports.MS_STEREO = 0x2
 
 /*
  * windowing coefficients for long blocks
@@ -953,7 +953,7 @@ exports.WINDOW_L = new Float32Array([
   0.216439614,
   0.130526192,
   0.043619387
-]);
+])
 
 /*
  * windowing coefficients for short blocks
@@ -974,7 +974,7 @@ exports.WINDOW_S = new Float32Array([
   0.608761429,
   0.382683432,
   0.130526192
-]);
+])
 
 /*
  * coefficients for intensity stereo processing
@@ -991,7 +991,7 @@ exports.IS_TABLE = new Float32Array([
   0.633974596,
   0.788675135,
   1.0
-]);
+])
 
 /*
  * coefficients for LSF intensity stereo processing
@@ -1035,30 +1035,30 @@ exports.IS_LSF_TABLE = [
     0.0078125,
     0.005524272
   ])
-];
+]
 
 /*
  * scalefactor bit lengths
  * derived from section 2.4.2.7 of ISO/IEC 11172-3
  */
 exports.SFLEN_TABLE = [
-  { slen1: 0, slen2: 0 },
-  { slen1: 0, slen2: 1 },
-  { slen1: 0, slen2: 2 },
-  { slen1: 0, slen2: 3 },
-  { slen1: 3, slen2: 0 },
-  { slen1: 1, slen2: 1 },
-  { slen1: 1, slen2: 2 },
-  { slen1: 1, slen2: 3 },
-  { slen1: 2, slen2: 1 },
-  { slen1: 2, slen2: 2 },
-  { slen1: 2, slen2: 3 },
-  { slen1: 3, slen2: 1 },
-  { slen1: 3, slen2: 2 },
-  { slen1: 3, slen2: 3 },
-  { slen1: 4, slen2: 2 },
-  { slen1: 4, slen2: 3 }
-];
+  {slen1: 0, slen2: 0},
+  {slen1: 0, slen2: 1},
+  {slen1: 0, slen2: 2},
+  {slen1: 0, slen2: 3},
+  {slen1: 3, slen2: 0},
+  {slen1: 1, slen2: 1},
+  {slen1: 1, slen2: 2},
+  {slen1: 1, slen2: 3},
+  {slen1: 2, slen2: 1},
+  {slen1: 2, slen2: 2},
+  {slen1: 2, slen2: 3},
+  {slen1: 3, slen2: 1},
+  {slen1: 3, slen2: 2},
+  {slen1: 3, slen2: 3},
+  {slen1: 4, slen2: 2},
+  {slen1: 4, slen2: 3}
+]
 
 /*
  * number of LSF scalefactor band values
@@ -1076,4 +1076,4 @@ exports.NSFB_TABLE = [
   [[6, 6, 6, 3], [12, 9, 9, 6], [6, 12, 9, 6]],
 
   [[8, 8, 5, 0], [15, 12, 9, 0], [6, 18, 9, 0]]
-];
+]
