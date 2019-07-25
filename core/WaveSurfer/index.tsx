@@ -179,6 +179,9 @@ export default class WaveSurfer extends Component<Props, State> {
 
     return (
       <View style={styles.container}>
+        <MaskedView pointerEvents="none" maskElement={this.renderElement()}>
+          {this.renderMask()}
+        </MaskedView>
         <Animated.ScrollView
           ref={this._scrollRef}
           horizontal
@@ -192,9 +195,6 @@ export default class WaveSurfer extends Component<Props, State> {
           style={styles.scrollView}>
           <View style={{height: peakViewHeight, width: peakViewWidth}} />
         </Animated.ScrollView>
-        <MaskedView pointerEvents="none" maskElement={this.renderElement()}>
-          {this.renderMask()}
-        </MaskedView>
       </View>
     )
   }
