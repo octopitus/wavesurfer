@@ -35,14 +35,16 @@ export default class WaveSurfer extends Component<Props, State> {
     peaks: []
   }
 
-  scrollRef = createRef<any>()
+  _scrollRef = createRef<any>()
 
-  onScrollEvent: ReturnType<typeof Animated.event>
+  _onScrollEvent: ReturnType<typeof Animated.event> | null = null
+
+  _animation: Animated.CompositeAnimation | null = null
 
   constructor(props: Props) {
     super(props)
 
-    this.onScrollEvent = Animated.event([
+    this._onScrollEvent = Animated.event([
       {nativeEvent: {contentOffset: {x: this.props.animatedValue}}}
     ])
   }
@@ -54,13 +56,11 @@ export default class WaveSurfer extends Component<Props, State> {
 
   componentDidUpdate() {
     if (this.state.peaks.length) {
-      this.triggerAnimation()
+      this._startAutoScrolling()
     }
   }
 
-  triggerAnimation = () => {
-    this.ensureScrollPositionIsCorrect()
-
+  _startAutoScrolling = () => {
     // @ts-ignore
     const travered = this.props.animatedValue.__getValue()
     const widthOfPeakView = this.state.peaks.length * 4
@@ -70,20 +70,22 @@ export default class WaveSurfer extends Component<Props, State> {
     const remainingDuration =
       ((widthOfPeakView - travered) * totalDuration) / widthOfPeakView
 
-    Animated.timing(this.props.animatedValue, {
+    this._animation = Animated.timing(this.props.animatedValue, {
       toValue: this.state.peaks.length * 4,
       duration: remainingDuration * 1000,
       easing: Easing.linear
-    }).start(this.ensureScrollPositionIsCorrect)
+    })
+
+    this._animation.start()
   }
 
-  ensureScrollPositionIsCorrect = () => {
+  _ensureScrollPositionIsCorrect = () => {
     // @ts-ignore
-    const travered = this.props.animatedValue.__getValue()
+    const traveled = this.props.animatedValue.__getValue()
 
-    if (this.scrollRef.current) {
-      this.scrollRef.current.getNode().scrollTo({
-        x: travered,
+    if (this._scrollRef.current) {
+      this._scrollRef.current.getNode().scrollTo({
+        x: traveled,
         animated: false
       })
     }
@@ -138,14 +140,15 @@ export default class WaveSurfer extends Component<Props, State> {
     return (
       <View style={styles.container}>
         <Animated.ScrollView
-          ref={this.scrollRef}
+          ref={this._scrollRef}
           horizontal
-          bounces={false}
           decelerationRate={0.5}
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={1}
-          onScroll={this.onScrollEvent}
-          onMomentumScrollEnd={this.triggerAnimation}
+          onScroll={this._onScrollEvent}
+          onScrollBeginDrag={this._ensureScrollPositionIsCorrect}
+          onMomentumScrollEnd={this._startAutoScrolling}
+          onScrollEndDrag={this._startAutoScrolling}
           style={styles.scrollView}>
           <View style={{height: peakViewHeight, width: peakViewWidth}} />
         </Animated.ScrollView>
