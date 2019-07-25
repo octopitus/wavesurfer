@@ -10,11 +10,13 @@ const {width} = Dimensions.get('screen')
 interface Props {
   source: {uri: string}
   width: number
+  height: number
   blockWidth: number
   blockPaddingInner: number
   activeColor: string
   inactiveColor: string
   animatedValue: Animated.Value
+  onDurationChange: (value: number) => void
 }
 
 interface State {
@@ -24,34 +26,40 @@ interface State {
 export default class WaveSurfer extends Component<Props, State> {
   static defaultProps = {
     width: width,
+    height: 320,
     activeColor: 'green',
     inactiveColor: 'red',
     blockWidth: 3,
-    blockPaddingInner: 1,
-    animatedValue: new Animated.Value(0)
+    blockPaddingInner: 1.5,
+    animatedValue: new Animated.Value(0),
+    onDurationChange: () => {}
   }
 
-  state = {
-    peaks: []
-  }
+  state = {peaks: []}
 
   _scrollRef = createRef<any>()
-
-  _onScrollEvent: ReturnType<typeof Animated.event> | null = null
-
+  _onScrollEventListener: ReturnType<typeof Animated.event> | null = null
+  _onDurationChangeListener: string | null = null
   _animation: Animated.CompositeAnimation | null = null
 
   constructor(props: Props) {
     super(props)
 
-    this._onScrollEvent = Animated.event([
+    this._onScrollEventListener = Animated.event([
       {nativeEvent: {contentOffset: {x: this.props.animatedValue}}}
     ])
+
+    this._onDurationChangeListener = this.props.animatedValue.addListener(
+      this._updateProgress
+    )
   }
 
   componentDidMount() {
     const {uri} = this.props.source
-    readFromExternalSource(uri).then(peaks => this.setState({peaks}))
+
+    readFromExternalSource(uri, {maxBlockHeight: this.props.height}).then(
+      peaks => this.setState({peaks})
+    )
   }
 
   componentDidUpdate() {
@@ -60,18 +68,34 @@ export default class WaveSurfer extends Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    if (this._onDurationChangeListener != null) {
+      this.props.animatedValue.removeListener(this._onDurationChangeListener)
+    }
+  }
+
+  _updateProgress = ({value}: {value: number}) => {
+    const blockWidth = this.props.blockWidth + this.props.blockPaddingInner
+    const widthOfPeakView = this.state.peaks.length * blockWidth
+    const totalDuration = this.state.peaks.length
+
+    // prettier-ignore
+    const duration = ((value) * totalDuration) / widthOfPeakView
+    this.props.onDurationChange(duration)
+  }
+
   _startAutoScrolling = () => {
     // @ts-ignore
-    const travered = this.props.animatedValue.__getValue()
-    const widthOfPeakView = this.state.peaks.length * 4
-    const totalDuration = this.state.peaks.length / 3
+    const travelled = this.props.animatedValue.__getValue()
+    const blockWidth = this.props.blockWidth + this.props.blockPaddingInner
+    const widthOfPeakView = this.state.peaks.length * blockWidth
+    const totalDuration = this.state.peaks.length
 
-    // @ts-ignore
-    const remainingDuration =
-      ((widthOfPeakView - travered) * totalDuration) / widthOfPeakView
+    // prettier-ignore
+    const remainingDuration = ((widthOfPeakView - travelled) * totalDuration) / widthOfPeakView
 
     this._animation = Animated.timing(this.props.animatedValue, {
-      toValue: this.state.peaks.length * 4,
+      toValue: widthOfPeakView,
       duration: remainingDuration * 1000,
       easing: Easing.linear
     })
@@ -81,11 +105,11 @@ export default class WaveSurfer extends Component<Props, State> {
 
   _ensureScrollPositionIsCorrect = () => {
     // @ts-ignore
-    const traveled = this.props.animatedValue.__getValue()
+    const travelled = this.props.animatedValue.__getValue()
 
     if (this._scrollRef.current) {
       this._scrollRef.current.getNode().scrollTo({
-        x: traveled,
+        x: travelled,
         animated: false
       })
     }
@@ -113,17 +137,26 @@ export default class WaveSurfer extends Component<Props, State> {
   }
 
   renderElement = () => {
-    const peakViewWidth = this.state.peaks.length * 4
+    const blockWidth = this.props.blockWidth + this.props.blockPaddingInner
+    const peakViewWidth = this.state.peaks.length * blockWidth
     const translateX = this.props.animatedValue.interpolate({
       inputRange: [0, peakViewWidth],
       outputRange: [0, -peakViewWidth]
     })
 
+    const width = this.props.blockWidth
+    const marginRight = this.props.blockPaddingInner
+
     return (
       <Animated.View
         style={[styles.peakContainer, {transform: [{translateX}]}]}>
         {this.state.peaks.map((peak, index) => {
-          return <View key={index} style={[styles.peak, {height: peak}]} />
+          return (
+            <View
+              key={index}
+              style={[styles.peak, {width, marginRight, height: peak}]}
+            />
+          )
         })}
       </Animated.View>
     )
@@ -134,7 +167,10 @@ export default class WaveSurfer extends Component<Props, State> {
       return null
     }
 
-    const peakViewWidth = this.state.peaks.length * 4 + this.props.width
+    const blockWidth = this.props.blockWidth + this.props.blockPaddingInner
+
+    // prettier-ignore
+    const peakViewWidth = this.state.peaks.length * blockWidth + this.props.width
     const peakViewHeight = Math.max(...this.state.peaks)
 
     return (
@@ -145,7 +181,7 @@ export default class WaveSurfer extends Component<Props, State> {
           decelerationRate={0.5}
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={1}
-          onScroll={this._onScrollEvent}
+          onScroll={this._onScrollEventListener}
           onScrollBeginDrag={this._ensureScrollPositionIsCorrect}
           onMomentumScrollEnd={this._startAutoScrolling}
           onScrollEndDrag={this._startAutoScrolling}

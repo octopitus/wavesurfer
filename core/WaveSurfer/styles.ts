@@ -21,9 +21,7 @@ const styles = StyleSheet.create({
     marginLeft: width / 2
   },
   peak: {
-    width: 3,
-    marginRight: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    backgroundColor: '#000'
   },
   scrollView: {
     position: 'absolute',

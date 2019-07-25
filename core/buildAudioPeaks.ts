@@ -1,26 +1,21 @@
-interface BuildOptions {
-  blockWidth: number
+export interface PeakOptions {
+  maxBlockHeight: number
   numberOfBlocks?: number
-}
-
-const defaultOptions = {
-  blockWidth: 3
 }
 
 export default function buildAudioPeaks(
   audioBuffer: AudioBuffer,
-  options: BuildOptions = defaultOptions
+  options: PeakOptions
 ) {
   const numberOfBlocks =
-    options.numberOfBlocks || Math.round(audioBuffer.duration) * 3
-  const surfaceWidth = numberOfBlocks * options.blockWidth
+    options.numberOfBlocks || Math.round(audioBuffer.duration)
   const leftChannel = audioBuffer.getChannelData(0)
   const blockGap = leftChannel.length / numberOfBlocks
   const _peaks = []
 
   for (let i = 0; i < numberOfBlocks; i++) {
     const bufferKey = Math.floor(blockGap * i)
-    const peak = Math.abs(leftChannel[bufferKey] * surfaceWidth)
+    const peak = Math.abs(leftChannel[bufferKey] * options.maxBlockHeight)
     _peaks.push(peak)
   }
 
