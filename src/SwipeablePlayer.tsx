@@ -1,14 +1,15 @@
 import React, {Component} from 'react'
-import {Dimensions} from 'react-native'
 
 import SlidingUpPanel from 'rn-sliding-up-panel'
+// @ts-ignore
+import {visibleHeight, statusBarHeight} from 'rn-sliding-up-panel/libs/layout'
 import Swiper from 'react-native-swiper'
 
 import Slide from './Slide'
 import samples from './samples'
 import styles from './styles'
 
-const {height} = Dimensions.get('screen')
+const height = visibleHeight() - statusBarHeight()
 
 class SwipeablePlayer extends Component {
   render() {

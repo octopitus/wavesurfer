@@ -5,7 +5,7 @@ import MaskedView from '@react-native-community/masked-view'
 import readFromExternalSource from '@core/readFromExternalSource'
 import styles from './styles'
 
-const {width} = Dimensions.get('screen')
+const {width} = Dimensions.get('window')
 
 interface Props {
   source: {uri: string}
