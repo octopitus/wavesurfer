@@ -11,7 +11,7 @@
     "@react-native-community/masked-view": "^0.1.1",
     "events": "^1.1.1",
     "react": "16.8.6",
-    "react-native": "0.60.3",
+    "react-native": "0.62.3",
     "react-native-swiper": "^1.5.14",
     "react-redux": "^7.x.x",
     "redux": "^4.x.x",
